@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../Layout/NavBar'; 
+import Navbar from '../Layout/NavBar';
+import Footer from '../components/Footer'; 
 
 interface StatisticsType {
   careHomes: number;
@@ -87,6 +88,7 @@ const About: React.FC = () => {
             </section>
           </div>
         </div>
+        <Footer />
       </div>
     </>
   );

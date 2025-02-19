@@ -1,7 +1,9 @@
 import React, { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import carehomelogin from '../Assets/login.svg';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 interface LoginFormData {
   email: string;
@@ -13,6 +15,8 @@ const CareHomeLoginPage: React.FC = () => {
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,10 +26,39 @@ const CareHomeLoginPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt with:', formData);
+    setLoading(true);
+    try {
+      const res = await axios.post("http://localhost:3001/api/v1/auth/login", {
+        email: formData.email,
+        password: formData.password,
+        type: 2,
+        careId: formData.email, // Assuming email is used for orgId temporarily
+      });
+
+      if (res.data.status === "success") {
+        localStorage.setItem("jsonwebtoken", res.data.token);
+        localStorage.setItem("role", res.data.role);
+        localStorage.setItem("userEmail", formData.email);
+        
+        setTimeout(() => {
+          setLoading(false);
+          navigate("/care_dashboard");
+        }, 2000);
+      }
+    } catch (err: any) {
+      setLoading(false);
+      if (err.response?.data?.message === "Please Verify Your Email!") {
+        navigate(`/email-verification/${formData.email}`);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: err.response?.data?.message || "Login failed. Please try again.",
+        });
+      }
+    }
   };
 
   return (
@@ -75,21 +108,22 @@ const CareHomeLoginPage: React.FC = () => {
               />
             </div>
             <div className="flex justify-between items-center mb-6">
-            <Link to="/forgotpw" className="text-sm text-[#85C536] hover:underline">
-             Forgot Password
-            </Link>
+              <Link to="/forgotpw" className="text-sm text-[#85C536] hover:underline">
+                Forgot Password
+              </Link>
             </div>
             <button
               type="submit"
               className="w-full bg-[#85C536] text-white py-2 px-4 rounded-[30px] hover:bg-[#85C536] transition duration-300"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <Link to="/caresignup" className="text-[#85C536] hover:underline">
-             signup
+              Signup
             </Link>
           </p>
         </div>

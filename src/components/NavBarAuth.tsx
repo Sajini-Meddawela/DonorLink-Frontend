@@ -1,4 +1,3 @@
-// components/Navbar.tsx
 import React from 'react';
 import { Bell, User, MessageSquare } from 'lucide-react';
 import logo from '../Assets/donorlink_logo.png';
@@ -10,13 +9,13 @@ const Navbar: React.FC = () => {
       <div className="mx-auto px-20">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
-            <a href="/"> 
+            <Link to={"/"}> 
               <img
                 className="h-14 w-auto"
                 src={logo}
                 alt="DonorLink Logo"
               />
-            </a>
+            </Link>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex gap-5">

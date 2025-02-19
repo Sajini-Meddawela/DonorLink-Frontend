@@ -1,17 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import logo from '../Assets/donorlink_logo.png';
+import { Link } from "react-router-dom";
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  const handleCareHomeClick = () => {
-    navigate('/carelogin'); // Navigate to care home login page
-  };
-
-  const handleDonorClick = () => {
-    navigate('/donorlogin'); // Navigate to donor login page
-  };
 
   return (
     <div className="flex h-screen w-full">
@@ -64,9 +55,8 @@ const LoginPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Button */}
+            <Link to={'/carelogin'}>
             <button 
-              onClick={handleCareHomeClick} 
               className="w-full bg-[#63C6F7] rounded-[30px] hover:bg-[#5BB5F6] text-white py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
             >
               Login as a Care Home Owner
@@ -74,6 +64,7 @@ const LoginPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            </Link>
           </div>
 
           {/* Donor Option */}
@@ -101,8 +92,8 @@ const LoginPage: React.FC = () => {
             </div>
 
             {/* Button */}
+            <Link to={'/donorlogin'}>
             <button 
-              onClick={handleDonorClick} 
               className="w-full bg-[#85C536] rounded-[30px] hover:bg-[#75B82F] text-white py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
             >
               Login as a Donor
@@ -110,6 +101,7 @@ const LoginPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            </Link>
           </div>
         </div>
       </div>

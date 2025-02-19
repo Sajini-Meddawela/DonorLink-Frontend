@@ -20,8 +20,7 @@ const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would typically integrate with EmailJS or your preferred email service
-    // This is a placeholder for the email sending logic
+    
     try {
       const response = await fetch('YOUR_EMAIL_API_ENDPOINT', {
         method: 'POST',

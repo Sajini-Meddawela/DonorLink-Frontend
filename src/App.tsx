@@ -12,8 +12,15 @@ import DonorSignup from './pages/DonorSignup';
 import ForgotPassword from './pages/ForgotPassword';
 import PasswordVerify from './pages/PasswordVerify';
 import CareDashboard from './pages/CareDashboard';
+import DonorDashboard from './pages/DonorDashboard';
 import InventoryManagement from './pages/InvantoryManagement';
 import AddInventory from './pages/AddInventory';
+import ConfirmationEmailSent from './pages/ConfirmationEmailSent';
+import EmailVerifiedPage from './pages/EmailVerification';
+import OTPVerification from './pages/OTPVerification';
+import PasswordRecovered from './pages/PasswordRecovery';
+import EmailConfirmation from "./pages/EmailConfirmation";
+import RegistrationSuccessCareHome from './pages/RegistrationSuccessCarehome';
 
 const App: React.FC = () => {
   return (
@@ -31,8 +38,15 @@ const App: React.FC = () => {
           <Route path = "/forgotpw" element = {<ForgotPassword/>}/>
           <Route path = "/passwordverify" element = {<PasswordVerify/>}/>
           <Route path = "/care_dashboard" element = {<CareDashboard/>}/>
+          <Route path = "/donor_dashboard" element = {<DonorDashboard/>}/>
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/inventory/add" element={<AddInventory />} />
+          <Route path="/confirmation-sent/:email" element={<ConfirmationEmailSent />} />
+          <Route path="/auth/:email/verify/:token" element={<EmailVerifiedPage />} />
+          <Route path="otp-sent/:email" element={<OTPVerification />} />
+          <Route path="/password-recoverd" element={<PasswordRecovered />} />
+          <Route path="/email-verification/:email" element={<EmailConfirmation />} />
+          <Route path="/registered-carehome/:email" element={<RegistrationSuccessCareHome />} />
         </Routes>
       </BrowserRouter>
     </div>
