@@ -13,8 +13,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import PasswordVerify from './pages/PasswordVerify';
 import CareDashboard from './pages/CareDashboard';
 import DonorDashboard from './pages/DonorDashboard';
-import InventoryManagement from './pages/InvantoryManagement';
+import InventoryManagement from './pages/InventoryManagement';
 import AddInventory from './pages/AddInventory';
+import DeleteInventory from './pages/DeleteInventory';
 import ConfirmationEmailSent from './pages/ConfirmationEmailSent';
 import EmailVerifiedPage from './pages/EmailVerification';
 import OTPVerification from './pages/OTPVerification';
@@ -40,6 +41,7 @@ const App: React.FC = () => {
           <Route path = "/care_dashboard" element = {<CareDashboard/>}/>
           <Route path = "/donor_dashboard" element = {<DonorDashboard/>}/>
           <Route path="/inventory" element={<InventoryManagement />} />
+          <Route path="/inventory/delete" element={<DeleteInventory />} />
           <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/confirmation-sent/:email" element={<ConfirmationEmailSent />} />
           <Route path="/auth/:email/verify/:token" element={<EmailVerifiedPage />} />

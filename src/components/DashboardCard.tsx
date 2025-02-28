@@ -1,29 +1,22 @@
-import React from 'react';
+import React from "react";
 
 interface DashboardCardProps {
   title: string;
-  icon: string;
+  icon: React.ElementType; // Accepts a React component (Lucide icon)
   color: string;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({ 
-  title, 
-  icon, 
-  color,
-  onClick 
-}) => {
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, icon: Icon, color, onClick }) => {
   return (
-    <div 
+    <div
+      className={`p-6 rounded-xl shadow-lg cursor-pointer ${color} transition-transform transform hover:scale-105`}
       onClick={onClick}
-      className="bg-white rounded-lg shadow-md w-64 h-64 flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-shadow"
     >
-      <div className={`w-24 h-24 ${color} rounded-lg flex items-center justify-center mb-4`}>
-        <img src={icon} alt={title} className="w-14 h-14" />
+      <div className="flex flex-col items-center justify-center space-y-4">
+        <Icon className="w-12 h-12 text-gray-700" /> {/* Render the Lucide icon */}
+        <h2 className="text-center font-semibold text-lg whitespace-pre-wrap">{title}</h2>
       </div>
-      <h3 className={`text-center ${title.includes('Inventory') ? 'text-[#8BC34A]' : 'text-[#03A9F4]'} text-xl font-semibold whitespace-pre-line`}>
-        {title}
-      </h3>
     </div>
   );
 };

@@ -1,34 +1,50 @@
-import React from 'react';
-import { Layout, ListTodo, Calendar, Inbox } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import React from "react";
+import { User, ClipboardList, Gift, Calendar } from "lucide-react";
 
-const Sidebar: React.FC = () => {
-  const location = useLocation();
+interface SidebarItemProps {
+  icon: React.ReactNode;
+  text: string;
+  isActive?: boolean;
+  onClick: () => void;
+}
 
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text, isActive, onClick }) => {
+  return (
+    <div
+      className={`flex items-center p-4 cursor-pointer hover:bg-blue-100 transition-all 
+      ${isActive ? "bg-sky-200 font-semibold" : "bg-white"} `}
+      onClick={onClick}
+    >
+      <div className="mr-3 text-gray-700">{icon}</div>
+      <span className="text-sm font-medium">{text}</span>
+    </div>
+  );
+};
+
+interface SidebarProps {
+  activePage: string;
+  onPageChange: (page: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
   const menuItems = [
-    { title: 'Dashboard', icon: <Layout size={20} />, path: '/dashboard' },
-    { title: 'Inventory Management', icon: <ListTodo size={20} />, path: '/inventory' },
-    { title: 'Need List', icon: <Inbox size={20} />, path: '/needs' },
-    { title: 'Donation Received', icon: <Inbox size={20} />, path: '/donations' },
-    { title: 'Scheduling', icon: <Calendar size={20} />, path: '/scheduling' }
+    { id: "dashboard", text: "Dashboard", icon: <User size={20} /> },
+    { id: "inventory", text: "Inventory Management", icon: <ClipboardList size={20} /> },
+    { id: "need-list", text: "Need List", icon: <ClipboardList size={20} /> },
+    { id: "donation", text: "Donation Received", icon: <Gift size={20} /> },
+    { id: "scheduling", text: "Scheduling", icon: <Calendar size={20} /> },
   ];
 
   return (
-    <div className="w-64 h-screen bg-white shadow-md flex flex-col py-6">
-      {menuItems.map((item, index) => (
-        <Link
-          key={index}
-          to={item.path}
-          className={`flex items-center gap-4 px-6 py-4 transition duration-300 hover:bg-gray-100
-            ${location.pathname === item.path ? 'bg-[#03A9F4]/10 border-l-4 border-[#03A9F4]' : ''}`}
-        >
-          <span className={`${location.pathname === item.path ? 'text-[#03A9F4]' : 'text-gray-600'}`}>
-            {item.icon}
-          </span>
-          <span className={`${location.pathname === item.path ? 'text-[#03A9F4] font-bold' : 'text-gray-600 font-medium'}`}>
-            {item.title}
-          </span>
-        </Link>
+    <div className="w-56 bg-white border-r h-full fixed top-0 left-0 pt-20">
+      {menuItems.map((item) => (
+        <SidebarItem
+          key={item.id}
+          icon={item.icon}
+          text={item.text}
+          isActive={activePage === item.id}
+          onClick={() => onPageChange(item.id)}
+        />
       ))}
     </div>
   );

@@ -1,11 +1,12 @@
-import React from 'react';
-import Navbar from '../components/NavBarAuth';
-import DashboardCard from '../components/DashboardCard';
-import CareHomeDashboard from '../Assets/Dashboard_care.jpg';
+import React from "react";
+import Navbar from "../components/NavBarAuth";
+import DashboardCard from "../components/DashboardCard";
+import CareHomeDashboard from "../Assets/Dashboard_care.jpg";
+import { Package, Gift, ClipboardList, Calendar } from "lucide-react";
 
 interface DashboardItem {
   title: string;
-  icon: string;
+  icon: React.ElementType; // Accept React component icons
   color: string;
   path: string;
 }
@@ -14,25 +15,25 @@ const Dashboard: React.FC = () => {
   const dashboardItems: DashboardItem[] = [
     {
       title: "Select\nCareHome",
-      icon: "/icons/inventory.svg",
+      icon: Package,
       color: "bg-[#8BC34A]/10",
       path: "/inventory",
     },
     {
       title: "Donation\nMade",
-      icon: "/icons/donation.svg",
+      icon: Gift,
       color: "bg-[#03A9F4]/10",
       path: "/donations/received",
     },
     {
       title: "Urgent\nNeeds",
-      icon: "/icons/needs.svg",
+      icon: ClipboardList,
       color: "bg-[#03A9F4]/10",
       path: "/needs",
     },
     {
       title: "Meal\nScheduling",
-      icon: "/icons/donation.svg",
+      icon: Calendar,
       color: "bg-[#03A9F4]/10",
       path: "/scheduling",
     },
@@ -58,7 +59,7 @@ const Dashboard: React.FC = () => {
                 <DashboardCard
                   key={index}
                   title={item.title}
-                  icon={item.icon}
+                  icon={item.icon} // Pass Lucide icon component
                   color={item.color}
                   onClick={() => (window.location.href = item.path)}
                 />

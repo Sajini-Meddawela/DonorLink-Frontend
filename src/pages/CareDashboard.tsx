@@ -1,38 +1,46 @@
-import React from 'react';
-import Navbar from '../components/NavBarAuth';
-import DashboardCard from '../components/DashboardCard';
-import CareHomeDashboard from '../Assets/CareHomeDashboard.jpg';
+import React from "react";
+import Navbar from "../components/NavBarAuth";
+import DashboardCard from "../components/DashboardCard";
+import CareHomeDashboard from "../Assets/CareHomeDashboard.jpg";
+import { Package, Gift, ClipboardList, Calendar } from "lucide-react";
 
 interface DashboardItem {
   title: string;
-  icon: string;
+  icon: keyof typeof iconMap;
   color: string;
   path: string;
 }
+
+const iconMap = {
+  "Inventory Management": Package,
+  "Donation Received": Gift,
+  "Needs List": ClipboardList,
+  "Donation Scheduling": Calendar,
+};
 
 const Dashboard: React.FC = () => {
   const dashboardItems: DashboardItem[] = [
     {
       title: "Inventory\nManagement",
-      icon: "/icons/inventory.svg",
+      icon: "Inventory Management",
       color: "bg-[#8BC34A]/10",
       path: "/inventory",
     },
     {
       title: "Donation\nReceived",
-      icon: "/icons/donation.svg",
+      icon: "Donation Received",
       color: "bg-[#03A9F4]/10",
       path: "/donations/received",
     },
     {
       title: "Needs\nList",
-      icon: "/icons/needs.svg",
+      icon: "Needs List",
       color: "bg-[#03A9F4]/10",
       path: "/needs",
     },
     {
       title: "Donation\nScheduling",
-      icon: "/icons/donation.svg",
+      icon: "Donation Scheduling",
       color: "bg-[#03A9F4]/10",
       path: "/scheduling",
     },
@@ -58,7 +66,7 @@ const Dashboard: React.FC = () => {
                 <DashboardCard
                   key={index}
                   title={item.title}
-                  icon={item.icon}
+                  icon={iconMap[item.icon]} // Pass the actual Lucide component
                   color={item.color}
                   onClick={() => (window.location.href = item.path)}
                 />
