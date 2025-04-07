@@ -2,15 +2,25 @@ import React from 'react';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import InventoryForm from '../components/Form';
+import { InventoryService } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { InventoryItem } from '../Types/types';
 
 const AddInventoryPage: React.FC = () => {
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log('Form Submitted');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (formData: Omit<InventoryItem, 'id'>) => {
+    try {
+      await InventoryService.createItem(formData);
+      navigate('/inventory');
+    } catch (error) {
+      console.error('Failed to create inventory item:', error);
+      alert('Failed to create inventory item');
+    }
   };
 
   const handleCancel = () => {
-    console.log('Form Cancelled');
+    navigate('/inventory');
   };
 
   return (
@@ -22,7 +32,11 @@ const AddInventoryPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col flex-1 overflow-hidden p-10 items-center justify-center ml-[200px]">
-          <InventoryForm onSubmit={handleSubmit} onCancel={handleCancel} />
+          <InventoryForm 
+            onSubmit={handleSubmit} 
+            onCancel={handleCancel} 
+            initialData={null}
+          />
         </div>
       </div>
     </div>

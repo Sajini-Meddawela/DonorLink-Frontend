@@ -1,8 +1,16 @@
-// types.ts
 export interface InventoryItem {
-    id: string | number;
-    name: string;
-    stockLevel: number;
-    category: string;
-    reorderLevel: number;
-  }
+  id?: number;
+  itemName: string;
+  category: string;
+  stockLevel: number;
+  reorderLevel: number;
+  itemDescription?: string;
+}
+
+export interface InventoryTableItem {
+  id?: number;
+  name: string;
+  category: string;
+  stockLevel: number;
+  reorderLevel: number;
+}

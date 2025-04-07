@@ -16,6 +16,7 @@ import DonorDashboard from './pages/DonorDashboard';
 import InventoryManagement from './pages/InventoryManagement';
 import AddInventory from './pages/AddInventory';
 import DeleteInventory from './pages/DeleteInventory';
+import EditInventory from'./pages/EditInventory';
 import ConfirmationEmailSent from './pages/ConfirmationEmailSent';
 import EmailVerifiedPage from './pages/EmailVerification';
 import OTPVerification from './pages/OTPVerification';
@@ -42,6 +43,7 @@ const App: React.FC = () => {
           <Route path = "/donor_dashboard" element = {<DonorDashboard/>}/>
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/inventory/delete" element={<DeleteInventory />} />
+          <Route path="/inventory/edit" element={<EditInventory />} />
           <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/confirmation-sent/:email" element={<ConfirmationEmailSent />} />
           <Route path="/auth/:email/verify/:token" element={<EmailVerifiedPage />} />
