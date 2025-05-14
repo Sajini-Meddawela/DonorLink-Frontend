@@ -1,26 +1,26 @@
+import { NeedItem } from '../Types/types';
 import React, { useState, useEffect } from 'react';
-import { InventoryItem } from '../Types/types';
 
-interface InventoryFormProps {
-  onSubmit: (formData: InventoryItem) => void;
+interface NeedFormProps {
+  onSubmit: (formData: NeedItem) => void;
   onCancel: () => void;
-  initialData: InventoryItem | null;
+  initialData: NeedItem | null;
   isEditMode?: boolean;
 }
 
-const InventoryForm: React.FC<InventoryFormProps> = ({ 
+const NeedForm: React.FC<NeedFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
   isEditMode = false 
 }) => {
-  const [formData, setFormData] = useState<InventoryItem>({
+  const [formData, setFormData] = useState<NeedItem>({
     id: 0,
     itemName: '',
+    requiredQuantity: 0,
+    currentQuantity: 0,
     category: 'Food',
-    stockLevel: 0,
-    reorderLevel: 0,
-    itemDescription: ''
+    urgencyLevel: 'Medium'
   });
 
   useEffect(() => {
@@ -28,19 +28,19 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
       setFormData({
         id: initialData.id || 0,
         itemName: initialData.itemName,
+        requiredQuantity: initialData.requiredQuantity,
+        currentQuantity: initialData.currentQuantity,
         category: initialData.category,
-        stockLevel: initialData.stockLevel,
-        reorderLevel: initialData.reorderLevel,
-        itemDescription: initialData.itemDescription || ''
+        urgencyLevel: initialData.urgencyLevel
       });
     }
   }, [initialData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'stockLevel' || name === 'reorderLevel' ? parseInt(value) || 0 : value
+      [name]: name.includes('Quantity') ? parseInt(value) || 0 : value
     }));
   };
 
@@ -52,7 +52,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
       <h2 className="text-2xl font-bold text-[#63C6F7] mb-6 text-center">
-        {isEditMode ? 'Edit Inventory Item' : 'Add New Inventory Item'}
+        {isEditMode ? 'Edit Need Item' : 'Add New Need Item'}
       </h2>
 
       <div className="mb-4">
@@ -68,6 +68,32 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
       </div>
 
       <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Required Quantity</label>
+        <input
+          type="number"
+          name="requiredQuantity"
+          value={formData.requiredQuantity}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          min="0"
+          required
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Current Quantity</label>
+        <input
+          type="number"
+          name="currentQuantity"
+          value={formData.currentQuantity}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          min="0"
+          required
+        />
+      </div>
+
+      <div className="mb-4">
         <label className="block text-gray-700 mb-2">Category</label>
         <select
           name="category"
@@ -77,46 +103,23 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         >
           <option value="Food">Food</option>
           <option value="Hygiene">Hygiene</option>
-          <option value="Stationary">Stationary</option>
+          <option value="Education">Education</option>
           <option value="Medical">Medical</option>
         </select>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">Stock Level</label>
-        <input
-          type="number"
-          name="stockLevel"
-          value={formData.stockLevel}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          min="0"
-          required
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">Reorder Level</label>
-        <input
-          type="number"
-          name="reorderLevel"
-          value={formData.reorderLevel}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          min="0"
-          required
-        />
-      </div>
-
       <div className="mb-6">
-        <label className="block text-gray-700 mb-2">Item Description</label>
-        <textarea
-          name="itemDescription"
-          value={formData.itemDescription || ''}
+        <label className="block text-gray-700 mb-2">Urgency Level</label>
+        <select
+          name="urgencyLevel"
+          value={formData.urgencyLevel}
           onChange={handleChange}
           className="w-full p-2 border rounded"
-          rows={3}
-        />
+        >
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
       </div>
 
       <div className="flex justify-between">
@@ -138,4 +141,4 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   );
 };
 
-export default InventoryForm;
+export default NeedForm;

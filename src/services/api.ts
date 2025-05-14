@@ -1,54 +1,81 @@
-import { InventoryItem } from '../Types/types';
+import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:4000/api/inventory';
+const NEEDS_BASE_URL = 'http://localhost:4000/api/needs';
+const MEAL_DONATION_BASE_URL = 'http://localhost:4000/api/meal-donations';
+
+export interface InventoryItem {
+  id: number;
+  itemName: string;
+  category: string;
+  stockLevel: number;
+  reorderLevel: number;
+  itemDescription?: string;
+}
+
+export interface NeedItem {
+  id: number;
+  itemName: string;
+  requiredQuantity: number;
+  currentQuantity: number;
+  category: string;
+  urgencyLevel: 'High' | 'Medium' | 'Low';
+}
 
 export const InventoryService = {
-  async getAllItems(): Promise<InventoryItem[]> {
-    const response = await fetch(`${API_BASE_URL}/inventory`);
-    if (!response.ok) throw new Error('Failed to fetch inventory items');
-    return await response.json();
+  getAllItems: async (): Promise<InventoryItem[]> => {
+    const response = await axios.get(API_BASE_URL);
+    console.log('API Response:', response.data); 
+    return response.data;
   },
 
-  async getItemById(id: number): Promise<InventoryItem> {
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`);
-    if (!response.ok) throw new Error('Failed to fetch inventory item');
-    return await response.json();
+  getItemById: async (id: number): Promise<InventoryItem> => {
+    const response = await axios.get(`${API_BASE_URL}/${id}`);
+    return response.data;
   },
 
-  async createItem(item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> {
-    const response = await fetch(`${API_BASE_URL}/inventory`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
-    if (!response.ok) throw new Error('Failed to create inventory item');
-    return await response.json();
+  createItem: async (itemData: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
+    const response = await axios.post(API_BASE_URL, itemData);
+    return response.data;
   },
 
-  async updateItem(id: number, item: Partial<InventoryItem>): Promise<InventoryItem> {
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
-    if (!response.ok) throw new Error('Failed to update inventory item');
-    return await response.json();
+  updateItem: async (id: number, itemData: Partial<InventoryItem>): Promise<InventoryItem> => {
+    const response = await axios.put(`${API_BASE_URL}/${id}`, itemData);
+    return response.data;
   },
 
-  async deleteItem(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Failed to delete inventory item');
+  deleteItem: async (id: number): Promise<void> => {
+    await axios.delete(`${API_BASE_URL}/${id}`);
   },
 
-  async searchItems(query: string): Promise<InventoryItem[]> {
-    const response = await fetch(`${API_BASE_URL}/inventory/search?q=${encodeURIComponent(query)}`);
-    if (!response.ok) throw new Error('Failed to search inventory items');
-    return await response.json();
+  searchItems: async (query: string): Promise<InventoryItem[]> => {
+    const response = await axios.get(`${API_BASE_URL}/search?q=${query}`);
+    return response.data;
+  }
+};
+
+export const NeedsService = {
+  getAllNeeds: async (): Promise<NeedItem[]> => {
+    const response = await axios.get(NEEDS_BASE_URL);
+    return response.data;
+  },
+
+  getNeedById: async (id: number): Promise<NeedItem> => {
+    const response = await axios.get(`${NEEDS_BASE_URL}/${id}`);
+    return response.data;
+  },
+
+  createNeed: async (needData: Omit<NeedItem, 'id'>): Promise<NeedItem> => {
+    const response = await axios.post(NEEDS_BASE_URL, needData);
+    return response.data;
+  },
+
+  updateNeed: async (id: number, needData: Partial<NeedItem>): Promise<NeedItem> => {
+    const response = await axios.put(`${NEEDS_BASE_URL}/${id}`, needData);
+    return response.data;
+  },
+
+  deleteNeed: async (id: number): Promise<void> => {
+    await axios.delete(`${NEEDS_BASE_URL}/${id}`);
   },
 };

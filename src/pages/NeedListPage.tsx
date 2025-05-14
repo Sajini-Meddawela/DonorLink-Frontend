@@ -1,51 +1,52 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Trash, Settings } from "lucide-react";
-import Sidebar from "../components/SideBar";
-import SearchBar from "../components/SearchBar";
-import Table from "../components/Table";
-import Pagination from "../components/Pagination";
-import Button from "../components/AddItemButton";
-import Navbar from "../components/NavBarAuth";
-import { InventoryItem, InventoryTableItem } from "../Types/types";
-import { InventoryService } from "../services/api";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Plus, Trash, Settings } from 'lucide-react';
+import Sidebar from '../components/SideBar';
+import Navbar from '../components/NavBarAuth';
+import Table from '../components/Table';
+import Pagination from '../components/Pagination';
+import Button from '../components/AddItemButton';
+import SearchBar from '../components/SearchBar';
+import { NeedsService } from '../services/api';
+import { NeedTableItem } from '../Types/types';
 
-const InventoryManagementPage: React.FC = () => {
-  const [activePage, setActivePage] = useState("inventory");
+const NeedListPage: React.FC = () => {
+  const [activePage, setActivePage] = useState("need-list");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [inventoryData, setInventoryData] = useState<InventoryTableItem[]>([]);
-  const [selectedItem, setSelectedItem] = useState<InventoryTableItem | null>(null);
+  const [needsData, setNeedsData] = useState<NeedTableItem[]>([]);
+  const [selectedNeed, setSelectedNeed] = useState<NeedTableItem | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(inventoryData.length / itemsPerPage);
+  const totalPages = Math.ceil(needsData.length / itemsPerPage);
 
   useEffect(() => {
-    const fetchInventory = async () => {
+    const fetchNeeds = async () => {
       try {
-        const data = await InventoryService.getAllItems();
+        const data = await NeedsService.getAllNeeds();
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
+          requiredQuantity: item.requiredQuantity,
+          currentQuantity: item.currentQuantity,
           category: item.category,
-          stockLevel: item.stockLevel,
-          reorderLevel: item.reorderLevel
+          urgencyLevel: item.urgencyLevel
         }));
-        setInventoryData(tableData);
+        setNeedsData(tableData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch inventory');
+        setError(err instanceof Error ? err.message : 'Failed to fetch needs');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInventory();
+    fetchNeeds();
   }, []);
 
-  const filteredData = inventoryData.filter(
+  const filteredData = needsData.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,21 +62,21 @@ const InventoryManagementPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleDeleteItem = (item: InventoryTableItem) => {
-    setSelectedItem(item);
+  const handleDeleteNeed = (need: NeedTableItem) => {
+    setSelectedNeed(need);
     setShowDeleteModal(true);
   };
 
   const confirmDelete = async () => {
-    if (!selectedItem?.id) return;
+    if (!selectedNeed?.id) return;
     
     try {
-      await InventoryService.deleteItem(selectedItem.id);
-      setInventoryData(prevData => prevData.filter(item => item.id !== selectedItem.id));
+      await NeedsService.deleteNeed(selectedNeed.id);
+      setNeedsData(prevData => prevData.filter(item => item.id !== selectedNeed.id));
       setShowDeleteModal(false);
-      setSelectedItem(null);
+      setSelectedNeed(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete item');
+      setError(err instanceof Error ? err.message : 'Failed to delete need');
     }
   };
 
@@ -88,28 +89,40 @@ const InventoryManagementPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden pt-20">
       <Sidebar activePage={activePage} />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
-          <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">Inventory Management</h1>
+          <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">Need List</h1>
           <div className="flex justify-between items-center mb-6">
-            <SearchBar onSearch={handleSearch} />
-            <Link to="/inventory/add">
-              <Button text="Add Item" icon={Plus} variant="primary" />
+            <SearchBar onSearch={handleSearch} placeholder="Search needs..." />
+            <Link to="/needs/add">
+              <Button text="Add Need" icon={Plus} variant="primary" />
             </Link>
           </div>
           <div className="bg-white rounded-md shadow overflow-hidden">
-            <Table<InventoryTableItem>
+            <Table<NeedTableItem>
               columns={[
                 { header: "Item Name", accessor: "name" },
-                { header: "Stock Level", accessor: "stockLevel" },
+                { header: "Required Qty", accessor: "requiredQuantity" },
+                { header: "Current Qty", accessor: "currentQuantity" },
                 { header: "Category", accessor: "category" },
-                { header: "Reorder Level", accessor: "reorderLevel" },
+                { 
+                  header: "Urgency", 
+                  accessor: (item: NeedTableItem) => (
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      item.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
+                      item.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {item.urgencyLevel}
+                    </span>
+                  )
+                },
                 {
                   header: "Actions",
-                  accessor: (item: InventoryTableItem) => (
+                  accessor: (item: NeedTableItem) => (
                     <div className="flex space-x-4">
-                      <Link to={`/inventory/edit/${item.id}`} className="text-blue-500 hover:text-blue-700">
+                      <Link to={`/needs/edit/${item.id}`} className="text-blue-500 hover:text-blue-700">
                         <Settings size={18} />
                       </Link>
-                      <button className="text-red-500 hover:text-red-700" onClick={() => handleDeleteItem(item)}>
+                      <button className="text-red-500 hover:text-red-700" onClick={() => handleDeleteNeed(item)}>
                         <Trash size={18} />
                       </button>
                     </div>
@@ -123,11 +136,11 @@ const InventoryManagementPage: React.FC = () => {
         </div>
       </div>
 
-      {showDeleteModal && selectedItem && (
+      {showDeleteModal && selectedNeed && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-md shadow-lg">
             <h2 className="text-lg font-bold mb-4">Confirm Delete</h2>
-            <p>Are you sure you want to delete <strong>{selectedItem.name}</strong>?</p>
+            <p>Are you sure you want to delete <strong>{selectedNeed.name}</strong>?</p>
             <div className="mt-4 flex justify-end space-x-4">
               <button className="px-4 py-2 bg-gray-300 rounded-full" onClick={() => setShowDeleteModal(false)}>
                 Cancel
@@ -143,4 +156,4 @@ const InventoryManagementPage: React.FC = () => {
   );
 };
 
-export default InventoryManagementPage;
+export default NeedListPage;

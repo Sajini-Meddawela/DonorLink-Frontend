@@ -23,6 +23,10 @@ import OTPVerification from './pages/OTPVerification';
 import PasswordRecovered from './pages/PasswordRecovery';
 import EmailConfirmation from "./pages/EmailConfirmation";
 import RegistrationSuccessCareHome from './pages/RegistrationSuccessCarehome';
+import AddNeedPage from './pages/AddNeedPage';
+import EditNeedPage from './pages/EditNeedPage';
+import NeedListPage from './pages/NeedListPage';
+import DeleteNeedPage from './pages/DeleteNeedPage';
 
 const App: React.FC = () => {
   return (
@@ -39,18 +43,23 @@ const App: React.FC = () => {
           <Route path = "/donorsignup" element={<DonorSignup />} />
           <Route path = "/forgotpw" element = {<ForgotPassword/>}/>
           <Route path = "/passwordverify" element = {<PasswordVerify/>}/>
-          <Route path = "/care_dashboard" element = {<CareDashboard/>}/>
-          <Route path = "/donor_dashboard" element = {<DonorDashboard/>}/>
-          <Route path="/inventory" element={<InventoryManagement />} />
-          <Route path="/inventory/delete" element={<DeleteInventory />} />
-          <Route path="/inventory/edit" element={<EditInventory />} />
-          <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/confirmation-sent/:email" element={<ConfirmationEmailSent />} />
           <Route path="/auth/:email/verify/:token" element={<EmailVerifiedPage />} />
           <Route path="otp-sent/:email" element={<OTPVerification />} />
           <Route path="/password-recoverd" element={<PasswordRecovered />} />
           <Route path="/email-verification/:email" element={<EmailConfirmation />} />
           <Route path="/registered-carehome/:email" element={<RegistrationSuccessCareHome />} />
+          <Route path = "/care_dashboard" element = {<CareDashboard/>}/>
+          <Route path = "/donor_dashboard" element = {<DonorDashboard/>}/>
+          <Route path="/inventory" element={<InventoryManagement />} />
+          <Route path="/inventory/delete" element={<DeleteInventory />} />
+          <Route path="/inventory/edit/:id" element={<EditInventory />} />
+          <Route path="/inventory/add" element={<AddInventory />} />
+          <Route path="/needs" element={<NeedListPage />} />
+          <Route path="/needs/add" element={<AddNeedPage />} />
+          <Route path="/needs/edit/:id" element={<EditNeedPage />} />
+          <Route path="/needs/delete/:id" element={<DeleteNeedPage />} />
+
         </Routes>
       </BrowserRouter>
     </div>

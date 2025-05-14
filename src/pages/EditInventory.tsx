@@ -16,10 +16,30 @@ const InventoryEditPage: React.FC = () => {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        if (!id) return;
+        if (!id) {
+          throw new Error('No ID provided');
+        }
+        
         const item = await InventoryService.getItemById(parseInt(id));
-        setItemDetails(item);
+        
+        if (!item) {
+          throw new Error('Item not found');
+        }
+        
+        // Ensure all required fields are present
+        const completeItem: InventoryItem = {
+          id: item.id,
+          itemName: item.itemName,
+          category: item.category,
+          stockLevel: item.stockLevel,
+          reorderLevel: item.reorderLevel,
+          itemDescription: item.itemDescription || ''
+        };
+        
+        setItemDetails(completeItem);
+        
       } catch (err) {
+        console.error('Error fetching item:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch item');
       } finally {
         setLoading(false);
@@ -36,7 +56,7 @@ const InventoryEditPage: React.FC = () => {
       navigate('/inventory');
     } catch (error) {
       console.error('Failed to update inventory item:', error);
-      alert('Failed to update inventory item');
+      alert('Failed to update inventory item. Please try again.');
     }
   };
 
@@ -52,7 +72,7 @@ const InventoryEditPage: React.FC = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       <Navbar />
       <div className="flex flex-1 overflow-hidden pt-20">
-        <Sidebar activePage="inventory" onPageChange={() => {}} />
+        <Sidebar activePage="inventory" />
         <div className="flex flex-col flex-1 overflow-hidden p-10 items-center justify-center ml-[200px]">
           <InventoryForm 
             onSubmit={handleSubmit} 

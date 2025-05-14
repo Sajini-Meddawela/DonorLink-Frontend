@@ -15,7 +15,7 @@ const AddInventoryPage: React.FC = () => {
       navigate('/inventory');
     } catch (error) {
       console.error('Failed to create inventory item:', error);
-      alert('Failed to create inventory item');
+      alert('Failed to create inventory item. Please try again.');
     }
   };
 
@@ -28,7 +28,7 @@ const AddInventoryPage: React.FC = () => {
       <Navbar />
       <div className="flex flex-1 overflow-hidden pt-20">
         <div className="relative">
-          <Sidebar activePage="inventory" onPageChange={() => {}} />
+          <Sidebar activePage="inventory"/>
         </div>
 
         <div className="flex flex-col flex-1 overflow-hidden p-10 items-center justify-center ml-[200px]">
