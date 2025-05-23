@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios from "axios";
+import { MealDonationSlot, CalendarDay } from "../Types/types";
 
-const API_BASE_URL = 'http://localhost:4000/api/inventory';
-const NEEDS_BASE_URL = 'http://localhost:4000/api/needs';
-const MEAL_DONATION_BASE_URL = 'http://localhost:4000/api/meal-donations';
+const API_BASE_URL = "http://localhost:4000/api/inventory";
+const NEEDS_BASE_URL = "http://localhost:4000/api/needs";
+const MEAL_DONATION_BASE_URL = "http://localhost:4000/api/mealdonations";
 
 export interface InventoryItem {
   id: number;
@@ -19,13 +20,13 @@ export interface NeedItem {
   requiredQuantity: number;
   currentQuantity: number;
   category: string;
-  urgencyLevel: 'High' | 'Medium' | 'Low';
+  urgencyLevel: "High" | "Medium" | "Low";
 }
 
 export const InventoryService = {
   getAllItems: async (): Promise<InventoryItem[]> => {
     const response = await axios.get(API_BASE_URL);
-    console.log('API Response:', response.data); 
+    console.log("API Response:", response.data);
     return response.data;
   },
 
@@ -34,12 +35,17 @@ export const InventoryService = {
     return response.data;
   },
 
-  createItem: async (itemData: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
+  createItem: async (
+    itemData: Omit<InventoryItem, "id">
+  ): Promise<InventoryItem> => {
     const response = await axios.post(API_BASE_URL, itemData);
     return response.data;
   },
 
-  updateItem: async (id: number, itemData: Partial<InventoryItem>): Promise<InventoryItem> => {
+  updateItem: async (
+    id: number,
+    itemData: Partial<InventoryItem>
+  ): Promise<InventoryItem> => {
     const response = await axios.put(`${API_BASE_URL}/${id}`, itemData);
     return response.data;
   },
@@ -51,7 +57,7 @@ export const InventoryService = {
   searchItems: async (query: string): Promise<InventoryItem[]> => {
     const response = await axios.get(`${API_BASE_URL}/search?q=${query}`);
     return response.data;
-  }
+  },
 };
 
 export const NeedsService = {
@@ -65,12 +71,15 @@ export const NeedsService = {
     return response.data;
   },
 
-  createNeed: async (needData: Omit<NeedItem, 'id'>): Promise<NeedItem> => {
+  createNeed: async (needData: Omit<NeedItem, "id">): Promise<NeedItem> => {
     const response = await axios.post(NEEDS_BASE_URL, needData);
     return response.data;
   },
 
-  updateNeed: async (id: number, needData: Partial<NeedItem>): Promise<NeedItem> => {
+  updateNeed: async (
+    id: number,
+    needData: Partial<NeedItem>
+  ): Promise<NeedItem> => {
     const response = await axios.put(`${NEEDS_BASE_URL}/${id}`, needData);
     return response.data;
   },
@@ -79,3 +88,36 @@ export const NeedsService = {
     await axios.delete(`${NEEDS_BASE_URL}/${id}`);
   },
 };
+
+export const MealDonationService = {
+  async getSlots(careHomeId: number, startDate: Date, endDate: Date): Promise<any> {
+    const response = await axios.get(MEAL_DONATION_BASE_URL, {
+      params: { careHomeId, startDate, endDate }
+    });
+    return response.data;
+  },
+
+  async createSlots(careHomeId: number, date: Date, mealTypes: string[]): Promise<any> {
+    const response = await axios.post(MEAL_DONATION_BASE_URL, { 
+      careHomeId, date, mealTypes 
+    });
+    return response.data;
+  },
+
+  async bookSlot(slotId: number, donorId: number): Promise<any> {
+    const response = await axios.post(
+      `${MEAL_DONATION_BASE_URL}/${slotId}/book`, 
+      { donorId }
+    );
+    return response.data;
+  },
+
+  async getDonorBookings(donorId: number): Promise<any> {
+    const response = await axios.get(
+      `${MEAL_DONATION_BASE_URL}/donor`, 
+      { params: { donorId } }
+    );
+    return response.data;
+  }
+};
+

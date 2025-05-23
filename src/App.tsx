@@ -27,6 +27,9 @@ import AddNeedPage from './pages/AddNeedPage';
 import EditNeedPage from './pages/EditNeedPage';
 import NeedListPage from './pages/NeedListPage';
 import DeleteNeedPage from './pages/DeleteNeedPage';
+import CareHomeMealSchedule from './pages/CareHomeMealSchedule';
+import DonorMealDonation from './pages/DonorMealDonation';
+
 
 const App: React.FC = () => {
   return (
@@ -59,6 +62,8 @@ const App: React.FC = () => {
           <Route path="/needs/add" element={<AddNeedPage />} />
           <Route path="/needs/edit/:id" element={<EditNeedPage />} />
           <Route path="/needs/delete/:id" element={<DeleteNeedPage />} />
+          <Route path="/scheduling" element={<CareHomeMealSchedule />} />
+         <Route path="/donation" element={<DonorMealDonation />} />
 
         </Routes>
       </BrowserRouter>

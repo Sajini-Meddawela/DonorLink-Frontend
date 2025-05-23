@@ -5,7 +5,7 @@ export interface InventoryItem {
   stockLevel: number;
   reorderLevel: number;
   itemDescription?: string;
-  careHomeId?: number; 
+  careHomeId?: number;
 }
 export interface InventoryTableItem {
   id: number;
@@ -21,7 +21,7 @@ export interface NeedItem {
   requiredQuantity: number;
   currentQuantity: number;
   category: string;
-  urgencyLevel: 'High' | 'Medium' | 'Low';
+  urgencyLevel: "High" | "Medium" | "Low";
 }
 
 export interface NeedTableItem {
@@ -30,5 +30,20 @@ export interface NeedTableItem {
   requiredQuantity: number;
   currentQuantity: number;
   category: string;
-  urgencyLevel: 'High' | 'Medium' | 'Low';
+  urgencyLevel: "High" | "Medium" | "Low";
+}
+
+export interface MealDonationSlot {
+  id?: number;
+  date: Date;
+  mealType: "Breakfast" | "Lunch" | "Dinner";
+  status: "Available" | "Booked" | "Completed";
+  careHomeId: number;
+  donorId?: number;
+}
+export interface CalendarDay {
+  date: Date;
+  breakfast?: MealDonationSlot;
+  lunch?: MealDonationSlot;
+  dinner?: MealDonationSlot;
 }
