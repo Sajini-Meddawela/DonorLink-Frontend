@@ -6,13 +6,15 @@ interface InventoryFormProps {
   onCancel: () => void;
   initialData: InventoryItem | null;
   isEditMode?: boolean;
+  careHomeId: number; 
 }
 
 const InventoryForm: React.FC<InventoryFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
-  isEditMode = false 
+  isEditMode = false,
+  careHomeId
 }) => {
   const [formData, setFormData] = useState<InventoryItem>({
     id: 0,
@@ -20,7 +22,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     category: 'Food',
     stockLevel: 0,
     reorderLevel: 0,
-    itemDescription: ''
+    itemDescription: '',
+    careHomeId: careHomeId 
   });
 
   useEffect(() => {
@@ -31,10 +34,16 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         category: initialData.category,
         stockLevel: initialData.stockLevel,
         reorderLevel: initialData.reorderLevel,
-        itemDescription: initialData.itemDescription || ''
+        itemDescription: initialData.itemDescription || '',
+        careHomeId: initialData.careHomeId
       });
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        careHomeId
+      }));
     }
-  }, [initialData]);
+  }, [initialData, careHomeId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

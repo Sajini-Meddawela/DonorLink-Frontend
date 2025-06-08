@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Plus, Trash, Settings } from 'lucide-react';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
@@ -11,6 +11,7 @@ import { NeedsService } from '../services/api';
 import { NeedTableItem } from '../Types/types';
 
 const NeedListPage: React.FC = () => {
+  const { careHomeId } = useParams<{ careHomeId: string }>();
   const [activePage, setActivePage] = useState("need-list");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,14 +27,17 @@ const NeedListPage: React.FC = () => {
   useEffect(() => {
     const fetchNeeds = async () => {
       try {
-        const data = await NeedsService.getAllNeeds();
+        if (!careHomeId) throw new Error('No care home ID provided');
+        
+        const data = await NeedsService.getAllNeeds(parseInt(careHomeId));
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
           requiredQuantity: item.requiredQuantity,
           currentQuantity: item.currentQuantity,
           category: item.category,
-          urgencyLevel: item.urgencyLevel
+          urgencyLevel: item.urgencyLevel,
+          careHomeId: item.careHomeId
         }));
         setNeedsData(tableData);
       } catch (err) {
@@ -44,7 +48,7 @@ const NeedListPage: React.FC = () => {
     };
 
     fetchNeeds();
-  }, []);
+  }, [careHomeId]);
 
   const filteredData = needsData.filter(
     (item) =>
@@ -87,12 +91,12 @@ const NeedListPage: React.FC = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       <Navbar />
       <div className="flex flex-1 overflow-hidden pt-20">
-      <Sidebar activePage={activePage} />
+        <Sidebar activePage={activePage} />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">Need List</h1>
           <div className="flex justify-between items-center mb-6">
             <SearchBar onSearch={handleSearch} placeholder="Search needs..." />
-            <Link to="/needs/add">
+            <Link to={`/needs/add/${careHomeId}`}>
               <Button text="Add Need" icon={Plus} variant="primary" />
             </Link>
           </div>

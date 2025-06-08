@@ -19,6 +19,7 @@ const InventoryManagementPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const careHomeId = 1; 
 
   const itemsPerPage = 5;
   const totalPages = Math.ceil(inventoryData.length / itemsPerPage);
@@ -26,13 +27,14 @@ const InventoryManagementPage: React.FC = () => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const data = await InventoryService.getAllItems();
+        const data = await InventoryService.getAllItems(careHomeId);
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
           category: item.category,
           stockLevel: item.stockLevel,
-          reorderLevel: item.reorderLevel
+          reorderLevel: item.reorderLevel,
+          careHomeId: item.careHomeId
         }));
         setInventoryData(tableData);
       } catch (err) {
@@ -70,7 +72,7 @@ const InventoryManagementPage: React.FC = () => {
     if (!selectedItem?.id) return;
     
     try {
-      await InventoryService.deleteItem(selectedItem.id);
+      await InventoryService.deleteItem(selectedItem.id, careHomeId);
       setInventoryData(prevData => prevData.filter(item => item.id !== selectedItem.id));
       setShowDeleteModal(false);
       setSelectedItem(null);
@@ -91,7 +93,7 @@ const InventoryManagementPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">Inventory Management</h1>
           <div className="flex justify-between items-center mb-6">
             <SearchBar onSearch={handleSearch} />
-            <Link to="/inventory/add">
+            <Link to={`/inventory/add/${careHomeId}`}>
               <Button text="Add Item" icon={Plus} variant="primary" />
             </Link>
           </div>

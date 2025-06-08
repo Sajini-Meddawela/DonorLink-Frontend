@@ -16,20 +16,13 @@ const EditNeedPage: React.FC = () => {
   useEffect(() => {
     const fetchNeed = async () => {
       try {
-        if (!id) {
-          throw new Error('No ID provided');
-        }
+        if (!id) throw new Error('No ID provided');
         
         const need = await NeedsService.getNeedById(parseInt(id));
-        
-        if (!need) {
-          throw new Error('Need not found');
-        }
+        if (!need) throw new Error('Need not found');
         
         setNeedDetails(need);
-        
       } catch (err) {
-        console.error('Error fetching need:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch need');
       } finally {
         setLoading(false);
@@ -69,6 +62,7 @@ const EditNeedPage: React.FC = () => {
             onCancel={handleCancel} 
             initialData={needDetails}
             isEditMode={true}
+            careHomeId={needDetails.careHomeId} 
           />
         </div>
       </div>

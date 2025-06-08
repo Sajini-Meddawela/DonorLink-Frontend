@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import NeedForm from '../components/NeedForm';
@@ -8,10 +8,19 @@ import { NeedItem } from '../Types/types';
 
 const AddNeedPage: React.FC = () => {
   const navigate = useNavigate();
+  const { careHomeId } = useParams<{ careHomeId: string }>();
+
+  if (!careHomeId) {
+    navigate('/needs');
+    return null;
+  }
 
   const handleSubmit = async (formData: Omit<NeedItem, 'id'>) => {
     try {
-      await NeedsService.createNeed(formData);
+      await NeedsService.createNeed({
+        ...formData,
+        careHomeId: parseInt(careHomeId)
+      });
       navigate('/needs');
     } catch (error) {
       console.error('Failed to create need:', error);
@@ -33,6 +42,7 @@ const AddNeedPage: React.FC = () => {
             onSubmit={handleSubmit} 
             onCancel={handleCancel} 
             initialData={null}
+            careHomeId={parseInt(careHomeId)}
           />
         </div>
       </div>

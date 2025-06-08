@@ -1,37 +1,30 @@
 import axios from "axios";
-import { MealDonationSlot, CalendarDay } from "../Types/types";
+import {
+  MealDonationSlot,
+  CalendarDay,
+  NeedItem,
+  CareHome,
+  InventoryItem,
+} from "../Types/types";
 
 const API_BASE_URL = "http://localhost:4000/api/inventory";
 const NEEDS_BASE_URL = "http://localhost:4000/api/needs";
 const MEAL_DONATION_BASE_URL = "http://localhost:4000/api/mealdonations";
-
-export interface InventoryItem {
-  id: number;
-  itemName: string;
-  category: string;
-  stockLevel: number;
-  reorderLevel: number;
-  itemDescription?: string;
-}
-
-export interface NeedItem {
-  id: number;
-  itemName: string;
-  requiredQuantity: number;
-  currentQuantity: number;
-  category: string;
-  urgencyLevel: "High" | "Medium" | "Low";
-}
+const CARE_HOME_BASE_URL = "http://localhost:4000/api/carehomes";
 
 export const InventoryService = {
-  getAllItems: async (): Promise<InventoryItem[]> => {
-    const response = await axios.get(API_BASE_URL);
-    console.log("API Response:", response.data);
+  getAllItems: async (careHomeId: number): Promise<InventoryItem[]> => {
+    const response = await axios.get(API_BASE_URL, { params: { careHomeId } });
     return response.data;
   },
 
-  getItemById: async (id: number): Promise<InventoryItem> => {
-    const response = await axios.get(`${API_BASE_URL}/${id}`);
+  getItemById: async (
+    id: number,
+    careHomeId: number
+  ): Promise<InventoryItem> => {
+    const response = await axios.get(`${API_BASE_URL}/${id}`, {
+      params: { careHomeId },
+    });
     return response.data;
   },
 
@@ -44,25 +37,40 @@ export const InventoryService = {
 
   updateItem: async (
     id: number,
+    careHomeId: number,
     itemData: Partial<InventoryItem>
   ): Promise<InventoryItem> => {
-    const response = await axios.put(`${API_BASE_URL}/${id}`, itemData);
+    const response = await axios.put(
+      `${API_BASE_URL}/${id}`,
+      {
+        ...itemData,
+        careHomeId,
+      },
+      {
+        params: { careHomeId },
+      }
+    );
     return response.data;
   },
 
-  deleteItem: async (id: number): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/${id}`);
+  deleteItem: async (id: number, careHomeId: number): Promise<void> => {
+    await axios.delete(`${API_BASE_URL}/${id}`, { params: { careHomeId } });
   },
 
-  searchItems: async (query: string): Promise<InventoryItem[]> => {
-    const response = await axios.get(`${API_BASE_URL}/search?q=${query}`);
+  searchItems: async (
+    query: string,
+    careHomeId: number
+  ): Promise<InventoryItem[]> => {
+    const response = await axios.get(`${API_BASE_URL}/search`, {
+      params: { q: query, careHomeId },
+    });
     return response.data;
   },
 };
 
 export const NeedsService = {
-  getAllNeeds: async (): Promise<NeedItem[]> => {
-    const response = await axios.get(NEEDS_BASE_URL);
+  getAllNeeds: async (careHomeId: number): Promise<NeedItem[]> => {
+    const response = await axios.get(`${NEEDS_BASE_URL}/carehome/${careHomeId}`);
     return response.data;
   },
 
@@ -90,34 +98,67 @@ export const NeedsService = {
 };
 
 export const MealDonationService = {
-  async getSlots(careHomeId: number, startDate: Date, endDate: Date): Promise<any> {
+  async getSlots(
+    careHomeId: number,
+    startDate: Date,
+    endDate: Date
+  ): Promise<any> {
     const response = await axios.get(MEAL_DONATION_BASE_URL, {
-      params: { careHomeId, startDate, endDate }
+      params: { careHomeId, startDate, endDate },
     });
     return response.data;
   },
 
-  async createSlots(careHomeId: number, date: Date, mealTypes: string[]): Promise<any> {
-    const response = await axios.post(MEAL_DONATION_BASE_URL, { 
-      careHomeId, date, mealTypes 
+  async createSlots(
+    careHomeId: number,
+    date: Date,
+    mealTypes: string[]
+  ): Promise<any> {
+    const response = await axios.post(MEAL_DONATION_BASE_URL, {
+      careHomeId,
+      date,
+      mealTypes,
     });
     return response.data;
   },
 
   async bookSlot(slotId: number, donorId: number): Promise<any> {
     const response = await axios.post(
-      `${MEAL_DONATION_BASE_URL}/${slotId}/book`, 
+      `${MEAL_DONATION_BASE_URL}/${slotId}/book`,
       { donorId }
     );
     return response.data;
   },
 
   async getDonorBookings(donorId: number): Promise<any> {
-    const response = await axios.get(
-      `${MEAL_DONATION_BASE_URL}/donor`, 
-      { params: { donorId } }
-    );
+    const response = await axios.get(`${MEAL_DONATION_BASE_URL}/donor`, {
+      params: { donorId },
+    });
     return response.data;
-  }
+  },
 };
 
+export const CareHomeService = {
+  async getCareHomes(filters: {
+    search?: string;
+    category?: string;
+    location?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const response = await axios.get(CARE_HOME_BASE_URL, { params: filters });
+    return response.data;
+  },
+
+  async getCareHomeDetails(id: number): Promise<CareHome> {
+    const response = await axios.get(`${CARE_HOME_BASE_URL}/${id}`);
+    return response.data;
+  },
+
+  async getCareHomeNeeds(careHomeId: number): Promise<NeedItem[]> {
+    const response = await axios.get(
+      `${NEEDS_BASE_URL}/carehome/${careHomeId}`
+    );
+    return response.data;
+  },
+};

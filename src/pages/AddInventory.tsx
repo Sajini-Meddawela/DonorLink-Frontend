@@ -3,15 +3,22 @@ import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import InventoryForm from '../components/Form';
 import { InventoryService } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { InventoryItem } from '../Types/types';
 
 const AddInventoryPage: React.FC = () => {
   const navigate = useNavigate();
+  const { careHomeId } = useParams<{ careHomeId: string }>();
 
   const handleSubmit = async (formData: Omit<InventoryItem, 'id'>) => {
     try {
-      await InventoryService.createItem(formData);
+      if (!careHomeId) {
+        throw new Error('Care home ID is required');
+      }
+      await InventoryService.createItem({
+        ...formData,
+        careHomeId: parseInt(careHomeId)
+      });
       navigate('/inventory');
     } catch (error) {
       console.error('Failed to create inventory item:', error);
@@ -36,6 +43,7 @@ const AddInventoryPage: React.FC = () => {
             onSubmit={handleSubmit} 
             onCancel={handleCancel} 
             initialData={null}
+            careHomeId={parseInt(careHomeId || '0')}
           />
         </div>
       </div>

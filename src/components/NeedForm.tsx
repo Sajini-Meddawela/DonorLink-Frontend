@@ -6,13 +6,15 @@ interface NeedFormProps {
   onCancel: () => void;
   initialData: NeedItem | null;
   isEditMode?: boolean;
+  careHomeId: number; 
 }
 
 const NeedForm: React.FC<NeedFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
-  isEditMode = false 
+  isEditMode = false,
+  careHomeId 
 }) => {
   const [formData, setFormData] = useState<NeedItem>({
     id: 0,
@@ -20,7 +22,8 @@ const NeedForm: React.FC<NeedFormProps> = ({
     requiredQuantity: 0,
     currentQuantity: 0,
     category: 'Food',
-    urgencyLevel: 'Medium'
+    urgencyLevel: 'Medium',
+    careHomeId: careHomeId || 1
   });
 
   useEffect(() => {
@@ -31,10 +34,16 @@ const NeedForm: React.FC<NeedFormProps> = ({
         requiredQuantity: initialData.requiredQuantity,
         currentQuantity: initialData.currentQuantity,
         category: initialData.category,
-        urgencyLevel: initialData.urgencyLevel
+        urgencyLevel: initialData.urgencyLevel,
+        careHomeId: initialData.careHomeId
       });
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        careHomeId
+      }));
     }
-  }, [initialData]);
+  }, [initialData, careHomeId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -121,6 +130,8 @@ const NeedForm: React.FC<NeedFormProps> = ({
           <option value="Low">Low</option>
         </select>
       </div>
+
+      <input type="hidden" name="careHomeId" value={formData.careHomeId} />
 
       <div className="flex justify-between">
         <button 

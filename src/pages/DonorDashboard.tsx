@@ -17,25 +17,25 @@ const Dashboard: React.FC = () => {
       title: "Select\nCareHome",
       icon: Package,
       color: "bg-[#8BC34A]/10",
-      path: "/inventory",
+      path: "/select-carehome",
     },
     {
       title: "Donation\nMade",
       icon: Gift,
       color: "bg-[#03A9F4]/10",
-      path: "/donations/received",
+      path: "/donation-made",
     },
     {
       title: "Urgent\nNeeds",
       icon: ClipboardList,
       color: "bg-[#03A9F4]/10",
-      path: "/needs",
+      path: "/urgent-needs",
     },
     {
       title: "Meal\nScheduling",
       icon: Calendar,
       color: "bg-[#03A9F4]/10",
-      path: "/scheduling",
+      path: "/meal-scheduling",
     },
   ];
 

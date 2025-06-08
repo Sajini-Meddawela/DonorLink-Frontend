@@ -5,7 +5,7 @@ export interface InventoryItem {
   stockLevel: number;
   reorderLevel: number;
   itemDescription?: string;
-  careHomeId?: number;
+  careHomeId: number;
 }
 export interface InventoryTableItem {
   id: number;
@@ -13,6 +13,7 @@ export interface InventoryTableItem {
   category: string;
   stockLevel: number;
   reorderLevel: number;
+  careHomeId?: number; 
 }
 
 export interface NeedItem {
@@ -22,6 +23,7 @@ export interface NeedItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
+  careHomeId: number; 
 }
 
 export interface NeedTableItem {
@@ -31,6 +33,7 @@ export interface NeedTableItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
+  careHomeId?: number; 
 }
 
 export interface MealDonationSlot {
@@ -46,4 +49,14 @@ export interface CalendarDay {
   breakfast?: MealDonationSlot;
   lunch?: MealDonationSlot;
   dinner?: MealDonationSlot;
+}
+
+export interface CareHome {
+  id: number;
+  registrationNo: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  category: string;
 }
