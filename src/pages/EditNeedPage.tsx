@@ -18,10 +18,13 @@ const EditNeedPage: React.FC = () => {
       try {
         if (!id) throw new Error('No ID provided');
         
-        const need = await NeedsService.getNeedById(parseInt(id));
+        // First get the need to get the careHomeId
+        const need = await NeedsService.getNeedById(parseInt(id), 1); // Temporary careHomeId
         if (!need) throw new Error('Need not found');
         
-        setNeedDetails(need);
+        // Now get the need with proper careHomeId
+        const fullNeed = await NeedsService.getNeedById(parseInt(id), need.careHomeId);
+        setNeedDetails(fullNeed);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch need');
       } finally {
@@ -34,8 +37,8 @@ const EditNeedPage: React.FC = () => {
 
   const handleSubmit = async (formData: NeedItem) => {
     try {
-      if (!id) return;
-      await NeedsService.updateNeed(parseInt(id), formData);
+      if (!id || !needDetails) return;
+      await NeedsService.updateNeed(parseInt(id), formData, needDetails.careHomeId);
       navigate('/needs');
     } catch (error) {
       console.error('Failed to update need:', error);

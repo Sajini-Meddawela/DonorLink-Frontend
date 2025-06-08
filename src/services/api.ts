@@ -70,12 +70,19 @@ export const InventoryService = {
 
 export const NeedsService = {
   getAllNeeds: async (careHomeId: number): Promise<NeedItem[]> => {
-    const response = await axios.get(`${NEEDS_BASE_URL}/carehome/${careHomeId}`);
-    return response.data;
+    try {
+      const response = await axios.get(`${NEEDS_BASE_URL}/carehome/${careHomeId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching needs:', error);
+      throw error;
+    }
   },
 
-  getNeedById: async (id: number): Promise<NeedItem> => {
-    const response = await axios.get(`${NEEDS_BASE_URL}/${id}`);
+  getNeedById: async (id: number, careHomeId: number): Promise<NeedItem> => {
+    const response = await axios.get(`${NEEDS_BASE_URL}/${id}`, {
+      params: { careHomeId }
+    });
     return response.data;
   },
 
@@ -86,14 +93,19 @@ export const NeedsService = {
 
   updateNeed: async (
     id: number,
-    needData: Partial<NeedItem>
+    needData: Partial<NeedItem>,
+    careHomeId: number
   ): Promise<NeedItem> => {
-    const response = await axios.put(`${NEEDS_BASE_URL}/${id}`, needData);
+    const response = await axios.put(`${NEEDS_BASE_URL}/${id}`, needData, {
+      params: { careHomeId }
+    });
     return response.data;
   },
 
-  deleteNeed: async (id: number): Promise<void> => {
-    await axios.delete(`${NEEDS_BASE_URL}/${id}`);
+  deleteNeed: async (id: number, careHomeId: number): Promise<void> => {
+    await axios.delete(`${NEEDS_BASE_URL}/${id}`, {
+      params: { careHomeId }
+    });
   },
 };
 

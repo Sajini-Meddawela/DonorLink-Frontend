@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Plus, Trash, Settings, Gift } from 'lucide-react';
 import DonorSidebar from '../components/DonorSidebar';
 import Navbar from '../components/NavBarAuth';
+import Table from '../components/Table';
+import Pagination from '../components/Pagination';
+import SearchBar from '../components/SearchBar';
 import { NeedsService } from '../services/api';
-import { NeedItem } from '../Types/types';
+import { NeedTableItem } from '../Types/types';
 
 const DonorNeedsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { careHomeId } = useParams<{ careHomeId: string }>();
-  const [needs, setNeeds] = useState<NeedItem[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [needsData, setNeedsData] = useState<NeedTableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(needsData.length / itemsPerPage);
 
   useEffect(() => {
     const fetchNeeds = async () => {
@@ -17,7 +27,16 @@ const DonorNeedsPage: React.FC = () => {
         if (!careHomeId) throw new Error('No care home ID provided');
         
         const data = await NeedsService.getAllNeeds(parseInt(careHomeId));
-        setNeeds(data);
+        const tableData = data.map(item => ({
+          id: item.id,
+          name: item.itemName,
+          requiredQuantity: item.requiredQuantity,
+          currentQuantity: item.currentQuantity,
+          category: item.category,
+          urgencyLevel: item.urgencyLevel,
+          careHomeId: item.careHomeId
+        }));
+        setNeedsData(tableData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch needs');
       } finally {
@@ -28,7 +47,27 @@ const DonorNeedsPage: React.FC = () => {
     fetchNeeds();
   }, [careHomeId]);
 
-  if (loading) return <div className="text-center p-8">Loading needs...</div>;
+  const filteredData = needsData.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleDonateClick = (needId: number) => {
+    navigate(`/donate/${needId}`);
+  };
+
+  if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
 
   return (
@@ -41,30 +80,47 @@ const DonorNeedsPage: React.FC = () => {
             Care Home Needs
           </h1>
           
-          <div className="bg-white rounded-lg shadow p-6">
-            {needs.length === 0 ? (
-              <div className="text-center py-8">No needs found for this care home</div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {needs.map((need) => (
-                  <div key={need.id} className="p-4 border rounded-lg">
-                    <h3 className="text-lg font-semibold">{need.itemName}</h3>
-                    <p className="text-gray-600">Category: {need.category}</p>
-                    <p>
-                      Quantity: {need.currentQuantity} / {need.requiredQuantity}
-                    </p>
-                    <p className={`inline-block px-2 py-1 rounded-full text-xs ${
-                      need.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
-                      need.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+          <div className="flex justify-between items-center mb-6">
+            <SearchBar onSearch={handleSearch} placeholder="Search needs..." />
+          </div>
+          
+          <div className="bg-white rounded-md shadow overflow-hidden">
+            <Table<NeedTableItem>
+              columns={[
+                { header: "Item Name", accessor: "name" },
+                { header: "Required Qty", accessor: "requiredQuantity" },
+                { header: "Current Qty", accessor: "currentQuantity" },
+                { header: "Category", accessor: "category" },
+                { 
+                  header: "Urgency", 
+                  accessor: (item: NeedTableItem) => (
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      item.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
+                      item.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-green-100 text-green-800'
                     }`}>
-                      {need.urgencyLevel}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+                      {item.urgencyLevel}
+                    </span>
+                  )
+                },
+                {
+                  header: "Actions",
+                  accessor: (item: NeedTableItem) => (
+                    <div className="flex space-x-4">
+                      <button 
+                        className="text-green-500 hover:text-green-700" 
+                        onClick={() => handleDonateClick(item.id)}
+                      >
+                        <Gift size={18} />
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+              data={paginatedData}
+            />
           </div>
+          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
         </div>
       </div>
     </div>

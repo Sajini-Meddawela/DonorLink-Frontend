@@ -15,7 +15,12 @@ const DeleteNeedPage: React.FC = () => {
           throw new Error('No ID provided');
         }
         
-        await NeedsService.deleteNeed(parseInt(id));
+        // First get the need to get the careHomeId
+        const need = await NeedsService.getNeedById(parseInt(id), 1); // Temporary careHomeId
+        if (!need) throw new Error('Need not found');
+        
+        // Then delete with proper careHomeId
+        await NeedsService.deleteNeed(parseInt(id), need.careHomeId);
         navigate('/needs', { state: { message: 'Need deleted successfully' } });
       } catch (error) {
         console.error('Error deleting need:', error);

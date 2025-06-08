@@ -31,6 +31,7 @@ import CareHomeMealSchedule from "./pages/CareHomeMealSchedule";
 import DonorMealDonation from "./pages/DonorMealDonation";
 import CareHomeSelectionPage from "./pages/CareHomeSelectionPage";
 import DonorNeedsPage from "./pages/DonorNeedsPage";
+import DonationPage from "./pages/DonationPage";
 
 const App: React.FC = () => {
   return (
@@ -86,6 +87,7 @@ const App: React.FC = () => {
             path="/carehome-needs/:careHomeId"
             element={<DonorNeedsPage />}
           />
+          <Route path="/donate/:needId" element={<DonationPage />} />
         </Routes>
       </BrowserRouter>
     </div>

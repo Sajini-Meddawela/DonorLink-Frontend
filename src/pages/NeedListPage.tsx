@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Trash, Settings } from 'lucide-react';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
@@ -11,7 +11,7 @@ import { NeedsService } from '../services/api';
 import { NeedTableItem } from '../Types/types';
 
 const NeedListPage: React.FC = () => {
-  const { careHomeId } = useParams<{ careHomeId: string }>();
+  const navigate = useNavigate();
   const [activePage, setActivePage] = useState("need-list");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,15 +21,15 @@ const NeedListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const careHomeId = 1; 
+
   const itemsPerPage = 5;
   const totalPages = Math.ceil(needsData.length / itemsPerPage);
 
   useEffect(() => {
     const fetchNeeds = async () => {
       try {
-        if (!careHomeId) throw new Error('No care home ID provided');
-        
-        const data = await NeedsService.getAllNeeds(parseInt(careHomeId));
+        const data = await NeedsService.getAllNeeds(careHomeId);
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
@@ -48,7 +48,7 @@ const NeedListPage: React.FC = () => {
     };
 
     fetchNeeds();
-  }, [careHomeId]);
+  }, []);
 
   const filteredData = needsData.filter(
     (item) =>
@@ -75,7 +75,7 @@ const NeedListPage: React.FC = () => {
     if (!selectedNeed?.id) return;
     
     try {
-      await NeedsService.deleteNeed(selectedNeed.id);
+      await NeedsService.deleteNeed(selectedNeed.id, careHomeId);
       setNeedsData(prevData => prevData.filter(item => item.id !== selectedNeed.id));
       setShowDeleteModal(false);
       setSelectedNeed(null);
