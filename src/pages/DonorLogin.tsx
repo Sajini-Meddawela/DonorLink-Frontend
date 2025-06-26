@@ -1,7 +1,9 @@
 import React, { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
-import donorlogin from '../Assets/login.svg'; // Assuming the donor login image path is correct
+import { useNavigate } from 'react-router-dom';
+import donorlogin from '../Assets/login.svg';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 interface LoginFormData {
   email: string;
@@ -13,6 +15,8 @@ const DonorLoginPage: React.FC = () => {
     email: '',
     password: '',
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,10 +26,36 @@ const DonorLoginPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt with:', formData);
+    setLoading(true);
+    try {
+      const res = await axios.post("http://localhost:4000/api/v1/auth/login", {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        
+        setTimeout(() => {
+          setLoading(false);
+          navigate("/donor_dashboard");
+        }, 2000);
+      }
+    } catch (err: any) {
+      setLoading(false);
+      if (err.response?.data?.message === "Please verify your email first") {
+        navigate(`/email-verification/${formData.email}`);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: err.response?.data?.message || "Login failed. Please try again.",
+        });
+      }
+    }
   };
 
   return (
@@ -74,21 +104,22 @@ const DonorLoginPage: React.FC = () => {
               />
             </div>
             <div className="flex justify-between items-center mb-6">
-            <Link to="/forgotpw" className="text-sm text-[#85C536] hover:underline">
-             Forgot Password
-            </Link>
+              <Link to="/forgotpw" className="text-sm text-[#85C536] hover:underline">
+                Forgot Password
+              </Link>
             </div>
             <button
               type="submit"
               className="w-full bg-[#85C536] text-white py-2 px-4 rounded-[30px] hover:bg-[#85C536] transition duration-300"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
           <p className="mt-4 text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <Link to="/donorsignup" className="text-[#85C536] hover:underline">
-             Signup
+              Signup
             </Link>
           </p>
         </div>

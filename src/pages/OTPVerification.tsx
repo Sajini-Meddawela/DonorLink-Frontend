@@ -22,7 +22,7 @@ const OTPVerification: React.FC = () => {
       if (!email) throw new Error("Email parameter is missing");
 
       const otp = values.code;
-      const res = await axios.post(`http://localhost:3001/api/v1/auth/reset-pass/otp`, {
+      const res = await axios.post(`http://localhost:4000/api/v1/auth/reset-pass/otp`, {
         email,
         otp,
       });

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import logo from "../Assets/donorlink_logo.png"; 
 import { Form, Input } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
-import emailConfirm from "../Assets/carehome_login.png";
+import donorLinkLogo from "../Assets/donorlink_logo.png";
+import careHomeImage from "../Assets/carehome_login.png";
 
 interface FormValues {
   email: string;
@@ -28,7 +28,7 @@ const EmailConfirmation: React.FC = () => {
     }
     try {
       const res = await axios.get(
-        `http://localhost:3001/api/v1/auth/verify/${values.email}`
+        `http://localhost:4000/api/v1/auth/verify/${values.email}`
       );
       console.log(res.data);
       setLoading(false);
@@ -48,7 +48,7 @@ const EmailConfirmation: React.FC = () => {
       {/* Left Side - Image Section */}
       <div className="bg-[#87CEEB] flex items-center justify-center">
         <img
-          src={emailConfirm}
+          src={careHomeImage}
           alt="Email Confirmation"
           className="max-h-full w-full object-cover"
         />
@@ -60,7 +60,7 @@ const EmailConfirmation: React.FC = () => {
           Email Verification
         </h1>
 
-        <img src={logo} alt="DonorLink Logo" className="w-40 mb-4" />
+        <img src={donorLinkLogo} alt="DonorLink Logo" className="w-40 mb-4" />
 
         <p className="text-md text-gray-600 mb-4">
           Enter your email starting with{" "}

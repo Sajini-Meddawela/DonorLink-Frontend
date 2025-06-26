@@ -5,7 +5,7 @@ import bg from "../Assets/carehome_login.png";
 
 const RegistrationSuccessCareHome: React.FC = () => {
   const params = useParams<Record<string, string | undefined>>();
-  const email = params.email ?? "sajinimeddawela@gmail.com"; // Default email
+  const email = params.email ?? "example@email.com";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen">
@@ -22,6 +22,10 @@ const RegistrationSuccessCareHome: React.FC = () => {
         <p className="text-md text-gray-600 mb-4">
           Your Email is{" "}
           <span className="text-lg font-semibold text-[#85C536]">{email}</span>
+        </p>
+
+        <p className="text-md text-gray-600 mb-6">
+          A verification email has been sent to your inbox. Please verify your email to complete registration.
         </p>
 
         <Link to="/carelogin">

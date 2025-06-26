@@ -12,7 +12,7 @@ const PasswordRecovered: React.FC = () => {
     const verifyEmail = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3001/api/v1/auth/${email}/verify/${token}`
+          `http://localhost:4000/api/v1/auth/${email}/verify/${token}`
         );
         console.log(response.status);
         setIsVerified(true);

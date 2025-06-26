@@ -1,43 +1,47 @@
 import React, { useState, useRef, ChangeEvent } from 'react';
 import { Camera, Eye, EyeOff } from 'lucide-react';
 import signup from '../Assets/signup.svg';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import Swal from "sweetalert2";
+import axios from "axios";
 
 interface FormData {
-  Name: string;
+  name: string;
   email: string;
-  NicNo: string;
-  contactNo: string;
+  phone: string;
+  address: string;
   password: string;
   confirmPassword: string;
   profileImage?: File;
 }
 
 interface FormErrors {
-  Name?: string;
+  name?: string;
   email?: string;
-  NicNo?: string;
-  contactNo?: string;
+  phone?: string;
+  address?: string;
   password?: string;
   confirmPassword?: string;
 }
 
 const SignupForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    Name: '',
+    name: '',
     email: '',
-    NicNo: '',
-    contactNo: '',
+    phone: '',
+    address: '',
     password: '',
     confirmPassword: ''
   });
 
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [passwordMatch, setPasswordMatch] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const validateEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -45,10 +49,6 @@ const SignupForm: React.FC = () => {
 
   const validatePassword = (password: string): boolean => {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
-  };
-
-  const validateRegistrationNo = (regNo: string): boolean => {
-    return /^RD/.test(regNo);
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -63,14 +63,6 @@ const SignupForm: React.FC = () => {
           newErrors.email = 'Incorrect email format';
         } else {
           delete newErrors.email;
-        }
-        break;
-
-      case 'NicNo':
-        if (!validateRegistrationNo(value)) {
-          newErrors.NicNo = 'Invalid NIC Number';
-        } else {
-          delete newErrors.NicNo;
         }
         break;
 
@@ -102,9 +94,52 @@ const SignupForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setLoading(true);
+
+    const { name, email, phone, address, password } = formData;
+
+    if (!name || !email || !phone || !address || !password) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "All Fields Required!",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", name);
+      formDataToSend.append("email", email);
+      formDataToSend.append("phone", phone);
+      formDataToSend.append("address", address);
+      formDataToSend.append("password", password);
+      formDataToSend.append("role", "DONOR");
+      
+      if (formData.profileImage) {
+        formDataToSend.append("profileImage", formData.profileImage);
+      }
+
+      const response = await axios.post("http://localhost:4000/api/v1/auth/register", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setLoading(false);
+      Swal.fire(response.data.message, "", "success");
+      navigate(`/confirmation-sent/${email}`);
+    } catch (error: any) {
+      setLoading(false);
+      if (axios.isAxiosError(error)) {
+        Swal.fire(error.response?.data?.message || "Registration failed", "", "error");
+      } else {
+        Swal.fire("An unexpected error occurred", "", "error");
+      }
+    }
   };
 
   const togglePasswordVisibility = (field: 'password' | 'confirmPassword'): void => {
@@ -165,7 +200,7 @@ const SignupForm: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Organization Name & Email */}
+            {/* Name & Email */}
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block font-bold text-[#63C6F7] mb-2">
@@ -173,11 +208,11 @@ const SignupForm: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  name="Name"
-                  value={formData.Name}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
-                  placeholder="Enter Organization Name"
+                  placeholder="Enter Your Name"
                   required
                 />
               </div>
@@ -200,36 +235,33 @@ const SignupForm: React.FC = () => {
               </div>
             </div>
 
-            {/* Registration No & Contact No */}
+            {/* Phone & Address */}
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="block font-bold text-[#63C6F7] mb-2">
-                  Nic No
-                </label>
-                <input
-                  type="text"
-                  name="NicNo"
-                  value={formData.NicNo}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
-                  placeholder="Enter Registration No"
-                  required
-                />
-                {errors.NicNo && (
-                  <p className="text-red-500 text-sm mt-1">{errors.NicNo}</p>
-                )}
-              </div>
-              <div>
-                <label className="block font-bold text-[#63C6F7] mb-2">
-                  Contact No
+                  Phone
                 </label>
                 <input
                   type="tel"
-                  name="contactNo"
-                  value={formData.contactNo}
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleInputChange}
                   className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
-                  placeholder="Enter Contact No"
+                  placeholder="Enter Phone Number"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-[#63C6F7] mb-2">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
+                  placeholder="Enter Address"
                   required
                 />
               </div>
@@ -289,8 +321,8 @@ const SignupForm: React.FC = () => {
               </div>
             </div>
 
-          {/* Buttons */}
-          <div className="grid grid-cols-2 gap-6 mt-8">
+            {/* Buttons */}
+            <div className="grid grid-cols-2 gap-6 mt-8">
               <button
                 type="button"
                 className="w-full py-2 bg-white border-2 border-[#85C536] text-[#85C536] rounded-[30px] hover:bg-gray-50 transition-colors"
@@ -300,8 +332,9 @@ const SignupForm: React.FC = () => {
               <button
                 type="submit"
                 className="w-full bg-[#85C536] text-white py-2 px-4 rounded-[30px] hover:bg-[#85C536] transition duration-300"
+                disabled={loading}
               >
-                Save
+                {loading ? "Registering..." : "Save"}
               </button>
             </div>
           </form>
@@ -309,9 +342,9 @@ const SignupForm: React.FC = () => {
           <div className="text-center mt-4">
             <p className="mt-4 text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to="/carelogin" className="text-[#85C536] hover:underline">
-             Login
-            </Link>
+              <Link to="/donorlogin" className="text-[#85C536] hover:underline">
+                Login
+              </Link>
             </p>
           </div>
         </div>
