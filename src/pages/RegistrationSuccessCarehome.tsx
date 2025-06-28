@@ -1,41 +1,55 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import logo from "../Assets/donorlink_logo.png";
 import bg from "../Assets/carehome_login.png";
+import { CheckCircle } from "lucide-react";
 
 const RegistrationSuccessCareHome: React.FC = () => {
   const params = useParams<Record<string, string | undefined>>();
-  const email = params.email ?? "example@email.com";
+  const navigate = useNavigate();
 
-  return (
+return (
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen">
-      {/* Left Section - Image */}
-      <div className="hidden md:flex justify-center items-center bg-[#9dd6f9]">
-        <img src={bg} alt="Care Home Nurse with Elderly" className="max-h-[85%] object-contain" />
+      {/* Left Side - Image Section */}
+      <div className="bg-[#87CEEB] flex items-center justify-center">
+        <img
+          src={bg}
+          alt="Email Confirmation"
+          className="w-[70%] h-auto object-cover"
+        />
       </div>
 
-      {/* Right Section - Content */}
-      <div className="flex flex-col justify-center items-center text-center px-8">
-        <h1 className="text-3xl font-bold text-[#63C6F7] mb-6">Account Created Successfully</h1>
-        <img src={logo} alt="DonorLink Logo" className="w-52 mb-6" />
-
-        <p className="text-md text-gray-600 mb-4">
-          Your Email is{" "}
-          <span className="text-lg font-semibold text-[#85C536]">{email}</span>
+      {/* Right Side - Content Section */}
+      <div className="flex flex-col items-center justify-center bg-white p-8 text-center">
+        <div className="bg-green-100 rounded-full p-4 mb-6">
+          <CheckCircle className="w-12 h-12 text-green-600" />
+        </div>
+        
+        <h1 className="text-3xl font-bold text-[#63C6F7] mb-4">
+          Confirmation Email Sent
+        </h1>
+        
+        <p className="text-lg text-gray-600 mb-6">
+          We've sent a confirmation email to <br />
+          <span className="font-bold text-[#85C536]">{params.email}</span>
         </p>
-
-        <p className="text-md text-gray-600 mb-6">
-          A verification email has been sent to your inbox. Please verify your email to complete registration.
+        
+        <p className="text-gray-500 mb-8">
+          Please check your inbox and verify your email to complete registration.
         </p>
-
-        <Link to="/carelogin">
-          <button
-            type="button"
-            className="rounded-3xl bg-[#85C536] px-8 py-2 text-md font-medium uppercase text-white shadow-md hover:bg-[#6da02c] transition duration-300"
-          >
-            Go to Login
-          </button>
-        </Link>
+        
+        <button
+          onClick={() => navigate("/carelogin")}
+          className="bg-[#85C536] text-white py-3 px-8 rounded-[30px] hover:bg-[#6da02c] transition duration-300 shadow-md"
+        >
+          Go to Login
+        </button>
+        
+        <img 
+          src={logo} 
+          alt="DonorLink Logo" 
+          className="w-32 mt-10 opacity-90" 
+        />
       </div>
     </div>
   );

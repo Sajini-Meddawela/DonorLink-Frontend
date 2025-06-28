@@ -1,7 +1,7 @@
-import React, { useState, useRef, ChangeEvent } from 'react';
-import { Camera, Eye, EyeOff } from 'lucide-react';
-import signup from '../Assets/signup.svg';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, ChangeEvent } from "react";
+import { Camera, Eye, EyeOff, X, Check } from "lucide-react";
+import signup from "../Assets/signup.svg";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
 
@@ -26,21 +26,22 @@ interface FormErrors {
 
 const SignupForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [passwordMatch, setPasswordMatch] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
+  const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const navigate = useNavigate();
 
   const validateEmail = (email: string): boolean => {
@@ -48,27 +49,57 @@ const SignupForm: React.FC = () => {
   };
 
   const validatePassword = (password: string): boolean => {
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+      password
+    );
   };
+
+  const checkPasswordStrength = (password: string) => {
+    if (!password) return "";
+
+    const hasLowercase = /[a-z]/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[@$!%*?&]/.test(password);
+    const isLong = password.length >= 8;
+
+    const strength =
+      (hasLowercase ? 1 : 0) +
+      (hasUppercase ? 1 : 0) +
+      (hasNumber ? 1 : 0) +
+      (hasSpecial ? 1 : 0) +
+      (isLong ? 1 : 0);
+
+    if (strength >= 4) return "strong";
+    if (strength >= 3) return "medium";
+    return "weak";
+  };
+
+  // Add this state variable
+  const [passwordStrength, setPasswordStrength] = useState<
+    "weak" | "medium" | "strong" | ""
+  >("");
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     const newErrors = { ...errors };
 
     switch (name) {
-      case 'email':
+      case "email":
         if (!validateEmail(value)) {
-          newErrors.email = 'Incorrect email format';
+          newErrors.email = "Incorrect email format";
         } else {
           delete newErrors.email;
         }
         break;
-
-      case 'password':
+      case "password":
+        const strength = checkPasswordStrength(value);
+        setPasswordStrength(strength);
         if (!validatePassword(value)) {
-          newErrors.password = 'Password must contain at least 8 characters, uppercase, lowercase, number and special character';
+          newErrors.password =
+            "Password must contain at least 8 characters, uppercase, lowercase, number and special character";
         } else {
           delete newErrors.password;
         }
@@ -77,7 +108,7 @@ const SignupForm: React.FC = () => {
         }
         break;
 
-      case 'confirmPassword':
+      case "confirmPassword":
         setPasswordMatch(value === formData.password);
         break;
     }
@@ -88,7 +119,7 @@ const SignupForm: React.FC = () => {
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, profileImage: file }));
+      setFormData((prev) => ({ ...prev, profileImage: file }));
       const imageUrl = URL.createObjectURL(file);
       setProfileImageUrl(imageUrl);
     }
@@ -98,9 +129,16 @@ const SignupForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { name, email, phone, address, password } = formData;
+    const { name, email, phone, address, password, confirmPassword } = formData;
 
-    if (!name || !email || !phone || !address || !password) {
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !address ||
+      !password ||
+      !confirmPassword
+    ) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -110,24 +148,39 @@ const SignupForm: React.FC = () => {
       return;
     }
 
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", name);
-      formDataToSend.append("email", email);
-      formDataToSend.append("phone", phone);
-      formDataToSend.append("address", address);
-      formDataToSend.append("password", password);
-      formDataToSend.append("role", "DONOR");
-      
-      if (formData.profileImage) {
-        formDataToSend.append("profileImage", formData.profileImage);
-      }
-
-      const response = await axios.post("http://localhost:4000/api/v1/auth/register", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    if (password !== confirmPassword) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Passwords do not match!",
       });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Create JSON payload instead of FormData
+      const payload = {
+        name,
+        email,
+        phone,
+        address,
+        password,
+        role: "DONOR",
+        profileImage: formData.profileImage
+          ? formData.profileImage.name
+          : undefined,
+      };
+
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/auth/register",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       setLoading(false);
       Swal.fire(response.data.message, "", "success");
@@ -135,15 +188,21 @@ const SignupForm: React.FC = () => {
     } catch (error: any) {
       setLoading(false);
       if (axios.isAxiosError(error)) {
-        Swal.fire(error.response?.data?.message || "Registration failed", "", "error");
+        Swal.fire(
+          error.response?.data?.message || "Registration failed",
+          "",
+          "error"
+        );
       } else {
         Swal.fire("An unexpected error occurred", "", "error");
       }
     }
   };
 
-  const togglePasswordVisibility = (field: 'password' | 'confirmPassword'): void => {
-    if (field === 'password') {
+  const togglePasswordVisibility = (
+    field: "password" | "confirmPassword"
+  ): void => {
+    if (field === "password") {
       setShowPassword(!showPassword);
     } else {
       setShowConfirmPassword(!showConfirmPassword);
@@ -273,54 +332,102 @@ const SignupForm: React.FC = () => {
                 <label className="block font-bold text-[#63C6F7] mb-2">
                   Password
                 </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
-                  placeholder="Enter Password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility('password')}
-                  className="absolute top-10 right-3 text-gray-500"
-                >
-                  {showPassword ? <EyeOff /> : <Eye />}
-                </button>
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
+                    placeholder="Enter Password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("password")}
+                    className="absolute right-3 top-2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                <div className="mt-1">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`h-1 flex-1 rounded-full ${
+                        passwordStrength === "weak"
+                          ? "bg-red-500"
+                          : passwordStrength === "medium"
+                          ? "bg-yellow-500"
+                          : passwordStrength === "strong"
+                          ? "bg-green-500"
+                          : "bg-gray-200"
+                      }`}
+                    ></div>
+                    <span className="text-xs text-gray-500">
+                      {passwordStrength === "weak"
+                        ? "Weak"
+                        : passwordStrength === "medium"
+                        ? "Medium"
+                        : passwordStrength === "strong"
+                        ? "Strong"
+                        : ""}
+                    </span>
+                  </div>
+                  {passwordStrength !== "strong" && formData.password && (
+                    <p className="text-red-500 text-xs mt-1">
+                      Password must contain at least 8 characters with
+                      uppercase, lowercase, number & special character
+                    </p>
+                  )}
+                </div>
               </div>
+
               <div className="relative">
                 <label className="block font-bold text-[#63C6F7] mb-2">
                   Confirm Password
                 </label>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
-                  placeholder="Confirm Password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility('confirmPassword')}
-                  className="absolute top-10 right-3 text-gray-500"
-                >
-                  {showConfirmPassword ? <EyeOff /> : <Eye />}
-                </button>
-                {formData.confirmPassword && !passwordMatch && (
-                  <p className="text-red-500 text-sm mt-1">
-                    Passwords do not match
-                  </p>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
+                    placeholder="Confirm Password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility("confirmPassword")}
+                    className="absolute right-3 top-2 text-gray-500"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
+                {formData.confirmPassword && (
+                  <div className="flex items-center mt-1">
+                    {passwordMatch ? (
+                      <Check className="text-green-500 mr-1" size={16} />
+                    ) : (
+                      <X className="text-red-500 mr-1" size={16} />
+                    )}
+                    <span
+                      className={`text-xs ${
+                        passwordMatch ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {passwordMatch
+                        ? "Passwords match"
+                        : "Passwords do not match"}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
-
             {/* Buttons */}
             <div className="grid grid-cols-2 gap-6 mt-8">
               <button
@@ -341,7 +448,7 @@ const SignupForm: React.FC = () => {
 
           <div className="text-center mt-4">
             <p className="mt-4 text-center text-sm text-gray-600">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link to="/donorlogin" className="text-[#85C536] hover:underline">
                 Login
               </Link>
