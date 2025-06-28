@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo from '../Assets/donorlink_logo.png';
 import VerifyCode from '../Assets/verification code.svg'
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const PasswordVerify: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [emailHint, setEmailHint] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (email.length > 0) {
@@ -23,9 +27,22 @@ const PasswordVerify: React.FC = () => {
     }
   }, [email]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('Verification code sent. Please check your email.');
+    try {
+      const response = await axios.post('http://localhost:4000/api/v1/auth/verify-otp', {
+        email,
+        otp: '123456' // This should be replaced with actual OTP input
+      });
+      setMessage('Verification successful. Please check your email for reset link.');
+      navigate(`/reset-password/${email}`);
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || 'Failed to verify OTP'
+      });
+    }
   };
 
   return (
@@ -54,13 +71,12 @@ const PasswordVerify: React.FC = () => {
           </p>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="Verification Code" className="block font-bold text-[#63C6F7] mb-2">Email</label>
+              <label htmlFor="otp" className="block font-bold text-[#63C6F7] mb-2">Verification Code</label>
               <input
-                type="verificationcode"
-                id="verificationcode"
+                type="text"
+                id="otp"
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#63C6F7] focus:border-[#63C6F7]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter 6-digit code"
                 required
               />
             </div>
@@ -68,7 +84,7 @@ const PasswordVerify: React.FC = () => {
               type="submit"
               className="w-full bg-[#85C536] text-white py-2 px-4 rounded-[30px] hover:bg-[#85C536] transition duration-300"
             >
-              Verify
+              Verify Code
             </button>
           </form>
           {message && (

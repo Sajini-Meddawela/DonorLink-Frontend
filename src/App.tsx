@@ -52,6 +52,7 @@ const App: React.FC = () => {
             path="/confirmation-sent/:email"
             element={<ConfirmationEmailSent />}
           />
+          <Route path="/verify-email" element={<EmailVerifiedPage />} />
           <Route
             path="/auth/:email/verify/:token"
             element={<EmailVerifiedPage />}

@@ -11,6 +11,7 @@ const API_BASE_URL = "http://localhost:4000/api/inventory";
 const NEEDS_BASE_URL = "http://localhost:4000/api/needs";
 const MEAL_DONATION_BASE_URL = "http://localhost:4000/api/mealdonations";
 const CARE_HOME_BASE_URL = "http://localhost:4000/api/carehomes";
+const API_AUTH_URL = "http://localhost:4000/api/v1";
 
 export const InventoryService = {
   getAllItems: async (careHomeId: number): Promise<InventoryItem[]> => {

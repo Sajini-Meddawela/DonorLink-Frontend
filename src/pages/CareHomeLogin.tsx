@@ -30,17 +30,14 @@ const CareHomeLoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:3001/api/v1/auth/login", {
+      const res = await axios.post("http://localhost:4000/api/v1/auth/login", {
         email: formData.email,
-        password: formData.password,
-        type: 2,
-        careId: formData.email, // Assuming email is used for orgId temporarily
+        password: formData.password
       });
 
-      if (res.data.status === "success") {
-        localStorage.setItem("jsonwebtoken", res.data.token);
-        localStorage.setItem("role", res.data.role);
-        localStorage.setItem("userEmail", formData.email);
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
         
         setTimeout(() => {
           setLoading(false);
@@ -49,7 +46,7 @@ const CareHomeLoginPage: React.FC = () => {
       }
     } catch (err: any) {
       setLoading(false);
-      if (err.response?.data?.message === "Please Verify Your Email!") {
+      if (err.response?.data?.message === "Please verify your email first") {
         navigate(`/email-verification/${formData.email}`);
       } else {
         Swal.fire({
