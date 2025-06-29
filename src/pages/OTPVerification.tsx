@@ -10,6 +10,11 @@ interface OTPFormValues {
   code: string;
 }
 
+interface VerifyOTPResponse {
+  message: string;
+  resetToken: string;
+}
+
 const OTPVerification: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -22,13 +27,21 @@ const OTPVerification: React.FC = () => {
       if (!email) throw new Error("Email parameter is missing");
 
       const otp = values.code;
-      const res = await axios.post(`http://localhost:4000/api/v1/auth/reset-pass/otp`, {
-        email,
-        otp,
-      });
+      const res = await axios.post<VerifyOTPResponse>(
+        `http://localhost:4000/api/v1/auth/verify-otp`,
+        {
+          email,
+          otp,
+        }
+      );
 
-      console.log(res.data);
-      navigate(`/reset-password/${email}`);
+      console.log("OTP verification response:", res.data);
+
+      navigate(`/reset-password/${email}`, {
+        state: {
+          resetToken: res.data.resetToken,
+        },
+      });
     } catch (error) {
       let errorMessage = "An error occurred. Please try again.";
       if (axios.isAxiosError(error) && error.response) {
@@ -51,26 +64,46 @@ const OTPVerification: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen">
       {/* Left Section - Nurse & Elderly Image */}
       <div className="hidden md:flex justify-center items-center bg-[#9dd6f9]">
-        <img src={careHomeImage} alt="Care Home Nurse" className="max-h-full w-full object-cover mt-60" />
+        <img
+          src={careHomeImage}
+          alt="Care Home Nurse"
+          className="max-h-full w-full object-cover mt-60"
+        />
       </div>
 
       {/* Right Section - OTP Verification */}
       <div className="flex flex-col justify-center items-center text-center px-8">
-        <h1 className="text-3xl font-bold text-[#63C6F7] mb-4">Reset Password Verification</h1>
+        <h1 className="text-3xl font-bold text-[#63C6F7] mb-4">
+          Reset Password Verification
+        </h1>
 
         <img src={donorLinkLogo} alt="DonorLink Logo" className="w-40 mb-4" />
 
         <p className="text-md text-gray-600 mb-4">
-          We want to make sure it's really you. In order to verify your email, enter the verification code that was sent to{" "}
-          <span className="text-[#85C536] font-semibold">{params.email ?? "johndoe@gmail.com"}</span>.
+          We want to make sure it's really you. In order to verify your email,
+          enter the verification code that was sent to{" "}
+          <span className="text-[#85C536] font-semibold">
+            {params.email ?? "johndoe@gmail.com"}
+          </span>
+          .
         </p>
 
-        <Form name="otp-verification" onFinish={onFinish} autoComplete="off" className="w-full max-w-md">
-          <h2 className="text-md font-bold text-left mb-1">Verification Code</h2>
+        <Form
+          name="otp-verification"
+          onFinish={onFinish}
+          autoComplete="off"
+          className="w-full max-w-md"
+        >
+          <h2 className="text-md font-bold text-left mb-1">
+            Verification Code
+          </h2>
           <Form.Item
             name="code"
             rules={[
-              { required: true, message: "Please enter the verification code!" },
+              {
+                required: true,
+                message: "Please enter the verification code!",
+              },
               { pattern: /^[0-9]{6}$/, message: "Enter a valid 6-digit OTP!" },
             ]}
             hasFeedback
