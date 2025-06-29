@@ -20,7 +20,6 @@ import EditInventory from "./pages/EditInventory";
 import ConfirmationEmailSent from "./pages/ConfirmationEmailSent";
 import EmailVerifiedPage from "./pages/EmailVerification";
 import OTPVerification from "./pages/OTPVerification";
-import PasswordRecovered from "./pages/PasswordRecovery";
 import EmailConfirmation from "./pages/EmailConfirmation";
 import RegistrationSuccessCareHome from "./pages/RegistrationSuccessCarehome";
 import AddNeedPage from "./pages/AddNeedPage";
@@ -32,6 +31,7 @@ import DonorMealDonation from "./pages/DonorMealDonation";
 import CareHomeSelectionPage from "./pages/CareHomeSelectionPage";
 import DonorNeedsPage from "./pages/DonorNeedsPage";
 import DonationPage from "./pages/DonationPage";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
@@ -47,7 +47,8 @@ const App: React.FC = () => {
           <Route path="/caresignup" element={<CareHomeSignup />} />
           <Route path="/donorsignup" element={<DonorSignup />} />
           <Route path="/forgotpw" element={<ForgotPassword />} />
-          <Route path="/passwordverify" element={<PasswordVerify />} />
+          <Route path="/passwordverify/:email?" element={<PasswordVerify />} />
+          <Route path="/reset-password/:email" element={<ResetPassword />} />
           <Route
             path="/confirmation-sent/:email"
             element={<ConfirmationEmailSent />}
@@ -58,7 +59,6 @@ const App: React.FC = () => {
             element={<EmailVerifiedPage />}
           />
           <Route path="otp-sent/:email" element={<OTPVerification />} />
-          <Route path="/password-recoverd" element={<PasswordRecovered />} />
           <Route
             path="/email-verification/:email"
             element={<EmailConfirmation />}
