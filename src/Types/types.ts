@@ -5,15 +5,15 @@ export interface InventoryItem {
   stockLevel: number;
   reorderLevel: number;
   itemDescription?: string;
-  careHomeId: number;
+  userId: number;
 }
+
 export interface InventoryTableItem {
   id: number;
   name: string;
   category: string;
   stockLevel: number;
   reorderLevel: number;
-  careHomeId?: number; 
 }
 
 export interface NeedItem {

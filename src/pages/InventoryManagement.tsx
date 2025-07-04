@@ -9,6 +9,7 @@ import Button from "../components/AddItemButton";
 import Navbar from "../components/NavBarAuth";
 import { InventoryItem, InventoryTableItem } from "../Types/types";
 import { InventoryService } from "../services/api";
+import { useAuth } from '../context/AuthContext';
 
 const InventoryManagementPage: React.FC = () => {
   const [activePage, setActivePage] = useState("inventory");
@@ -19,7 +20,7 @@ const InventoryManagementPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const careHomeId = 1; 
+  const { user } = useAuth();
 
   const itemsPerPage = 5;
   const totalPages = Math.ceil(inventoryData.length / itemsPerPage);
@@ -27,14 +28,16 @@ const InventoryManagementPage: React.FC = () => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const data = await InventoryService.getAllItems(careHomeId);
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+        const data = await InventoryService.getAllItems(user.id);
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
           category: item.category,
           stockLevel: item.stockLevel,
-          reorderLevel: item.reorderLevel,
-          careHomeId: item.careHomeId
+          reorderLevel: item.reorderLevel
         }));
         setInventoryData(tableData);
       } catch (err) {
@@ -45,7 +48,7 @@ const InventoryManagementPage: React.FC = () => {
     };
 
     fetchInventory();
-  }, []);
+  }, [user]);
 
   const filteredData = inventoryData.filter(
     (item) =>
@@ -69,10 +72,10 @@ const InventoryManagementPage: React.FC = () => {
   };
 
   const confirmDelete = async () => {
-    if (!selectedItem?.id) return;
+    if (!selectedItem?.id || !user) return;
     
     try {
-      await InventoryService.deleteItem(selectedItem.id, careHomeId);
+      await InventoryService.deleteItem(selectedItem.id, user.id);
       setInventoryData(prevData => prevData.filter(item => item.id !== selectedItem.id));
       setShowDeleteModal(false);
       setSelectedItem(null);
@@ -81,6 +84,10 @@ const InventoryManagementPage: React.FC = () => {
     }
   };
 
+  if (!user) {
+    return <div className="text-center p-8">Please login to access this page</div>;
+  }
+
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
 
@@ -88,12 +95,12 @@ const InventoryManagementPage: React.FC = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       <Navbar />
       <div className="flex flex-1 overflow-hidden pt-20">
-      <Sidebar activePage={activePage} />
+        <Sidebar activePage={activePage} />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">Inventory Management</h1>
           <div className="flex justify-between items-center mb-6">
             <SearchBar onSearch={handleSearch} />
-            <Link to={`/inventory/add/${careHomeId}`}>
+            <Link to="/inventory/add">
               <Button text="Add Item" icon={Plus} variant="primary" />
             </Link>
           </div>
