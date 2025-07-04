@@ -4,22 +4,22 @@ import Sidebar from "../components/SideBar";
 import Navbar from "../components/NavBarAuth";
 import InventoryForm from "../components/Form";
 import { InventoryService } from "../services/api";
-import { InventoryItem } from "../Types/types";
+import { useAuth } from '../context/AuthContext';
 
-const InventoryEditPage: React.FC = () => {
+const EditInventoryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [itemDetails, setItemDetails] = useState<InventoryItem | null>(null);
+  const [itemDetails, setItemDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const careHomeId = 1; // Hardcoded for now
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        if (!id) throw new Error("No ID provided");
+        if (!id || !user) throw new Error("No ID provided or user not authenticated");
 
-        const item = await InventoryService.getItemById(parseInt(id), careHomeId);
+        const item = await InventoryService.getItemById(parseInt(id), user.id);
         if (!item) throw new Error("Item not found");
 
         setItemDetails(item);
@@ -31,12 +31,12 @@ const InventoryEditPage: React.FC = () => {
     };
 
     fetchItem();
-  }, [id]);
+  }, [id, user]);
 
-  const handleSubmit = async (formData: InventoryItem) => {
+  const handleSubmit = async (formData: any) => {
     try {
-      if (!id) return;
-      await InventoryService.updateItem(parseInt(id), careHomeId, formData);
+      if (!id || !user) return;
+      await InventoryService.updateItem(parseInt(id), user.id, formData);
       navigate("/inventory");
     } catch (error) {
       console.error("Failed to update inventory item:", error);
@@ -48,11 +48,13 @@ const InventoryEditPage: React.FC = () => {
     navigate("/inventory");
   };
 
+  if (!user) {
+    return <div className="text-center p-8">Please login to access this page</div>;
+  }
+
   if (loading) return <div className="text-center p-8">Loading...</div>;
-  if (error)
-    return <div className="text-center p-8 text-red-500">Error: {error}</div>;
-  if (!itemDetails)
-    return <div className="text-center p-8">Item not found</div>;
+  if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
+  if (!itemDetails) return <div className="text-center p-8">Item not found</div>;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -65,7 +67,6 @@ const InventoryEditPage: React.FC = () => {
             onCancel={handleCancel}
             initialData={itemDetails}
             isEditMode={true}
-            careHomeId={careHomeId}
           />
         </div>
       </div>
@@ -73,4 +74,4 @@ const InventoryEditPage: React.FC = () => {
   );
 };
 
-export default InventoryEditPage;
+export default EditInventoryPage;

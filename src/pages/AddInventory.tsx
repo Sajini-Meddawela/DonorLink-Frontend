@@ -3,21 +3,21 @@ import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import InventoryForm from '../components/Form';
 import { InventoryService } from '../services/api';
-import { useNavigate, useParams } from 'react-router-dom';
-import { InventoryItem } from '../Types/types';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const AddInventoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const { careHomeId } = useParams<{ careHomeId: string }>();
+  const { user } = useAuth();
 
-  const handleSubmit = async (formData: Omit<InventoryItem, 'id'>) => {
+  const handleSubmit = async (formData: any) => {
     try {
-      if (!careHomeId) {
-        throw new Error('Care home ID is required');
+      if (!user) {
+        throw new Error('User not authenticated');
       }
       await InventoryService.createItem({
         ...formData,
-        careHomeId: parseInt(careHomeId)
+        userId: user.id
       });
       navigate('/inventory');
     } catch (error) {
@@ -29,6 +29,10 @@ const AddInventoryPage: React.FC = () => {
   const handleCancel = () => {
     navigate('/inventory');
   };
+
+  if (!user) {
+    return <div className="text-center p-8">Please login to access this page</div>;
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -43,7 +47,6 @@ const AddInventoryPage: React.FC = () => {
             onSubmit={handleSubmit} 
             onCancel={handleCancel} 
             initialData={null}
-            careHomeId={parseInt(careHomeId || '0')}
           />
         </div>
       </div>
