@@ -4,6 +4,7 @@ import donorlogin from '../Assets/login.svg';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useAuth } from '../context/AuthContext';
 
 interface LoginFormData {
   email: string;
@@ -17,6 +18,7 @@ const DonorLoginPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,20 +32,7 @@ const DonorLoginPage: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:4000/api/v1/auth/login", {
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        
-        setTimeout(() => {
-          setLoading(false);
-          navigate("/donor_dashboard");
-        }, 2000);
-      }
+      await login(formData.email, formData.password);
     } catch (err: any) {
       setLoading(false);
       if (err.response?.data?.message === "Please verify your email first") {

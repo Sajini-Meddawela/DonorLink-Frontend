@@ -6,12 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 interface CareHome {
   id: number;
-  registrationNo: string;
+  registrationNo: string | null;
   name: string;
-  address: string;
+  address: string | null;
   phone: string;
   email: string;
-  category: string;
+  category: string | null;
 }
 
 const CareHomeSelectionPage: React.FC = () => {
@@ -20,19 +20,38 @@ const CareHomeSelectionPage: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCareHomes = async () => {
       try {
+        setLoading(true);
         const response = await axios.get("/api/carehomes", {
           params: {
             search: searchTerm,
             category: categoryFilter,
             location: locationFilter,
+            page: pagination.page,
+            limit: pagination.limit
           },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
         });
+        
         setCareHomes(response.data.data);
+        setPagination({
+          page: response.data.meta.page,
+          limit: response.data.meta.limit,
+          total: response.data.meta.total,
+          totalPages: response.data.meta.totalPages
+        });
       } catch (error) {
         console.error("Error fetching care homes:", error);
       } finally {
@@ -41,7 +60,11 @@ const CareHomeSelectionPage: React.FC = () => {
     };
 
     fetchCareHomes();
-  }, [searchTerm, categoryFilter, locationFilter]);
+  }, [searchTerm, categoryFilter, locationFilter, pagination.page]);
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -85,30 +108,55 @@ const CareHomeSelectionPage: React.FC = () => {
 
             {loading ? (
               <div className="text-center py-8">Loading care homes...</div>
+            ) : careHomes.length === 0 ? (
+              <div className="text-center py-8">No care homes found</div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {careHomes.map((home) => (
-                  <div
-                    key={home.id}
-                    className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/carehome-needs/${home.id}`)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-semibold">
-                          {home.name} ({home.registrationNo})
-                        </h3>
-                        <p className="text-sm text-gray-600">{home.address}</p>
-                        <p className="text-sm text-gray-600">{home.category}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm">{home.phone}</p>
-                        <p className="text-sm text-blue-600">{home.email}</p>
+              <>
+                <div className="grid grid-cols-1 gap-4 mb-6">
+                  {careHomes.map((home) => (
+                    <div
+                      key={home.id}
+                      className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/carehome-needs/${home.id}`)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold">
+                            {home.name} {home.registrationNo && `(${home.registrationNo})`}
+                          </h3>
+                          {home.address && <p className="text-sm text-gray-600">{home.address}</p>}
+                          {home.category && <p className="text-sm text-gray-600">{home.category}</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm">{home.phone}</p>
+                          <p className="text-sm text-blue-600">{home.email}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                
+                {/* Pagination controls */}
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span>
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.totalPages}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>

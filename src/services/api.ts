@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+
 import {
   MealDonationSlot,
   CalendarDay,
@@ -7,6 +9,18 @@ import {
   InventoryItem,
 } from "../Types/types";
 
+const api = axios.create({
+  baseURL: "http://localhost:4000/api",
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 const API_BASE_URL = "http://localhost:4000/api/inventory";
 const NEEDS_BASE_URL = "http://localhost:4000/api/needs";
 const MEAL_DONATION_BASE_URL = "http://localhost:4000/api/mealdonations";
@@ -14,56 +28,43 @@ const CARE_HOME_BASE_URL = "http://localhost:4000/api/carehomes";
 const API_AUTH_URL = "http://localhost:4000/api/v1";
 
 export const InventoryService = {
-  getAllItems: async (careHomeId: number): Promise<InventoryItem[]> => {
-    const response = await axios.get(API_BASE_URL, { params: { careHomeId } });
+  getAllItems: async (userId: number): Promise<InventoryItem[]> => {
+    const response = await api.get("/inventory", { params: { userId } });
     return response.data;
   },
 
-  getItemById: async (
-    id: number,
-    careHomeId: number
-  ): Promise<InventoryItem> => {
-    const response = await axios.get(`${API_BASE_URL}/${id}`, {
-      params: { careHomeId },
+  getItemById: async (id: number, userId: number): Promise<InventoryItem> => {
+    const response = await api.get(`/inventory/${id}`, {
+      params: { userId },
     });
     return response.data;
   },
 
-  createItem: async (
-    itemData: Omit<InventoryItem, "id">
-  ): Promise<InventoryItem> => {
-    const response = await axios.post(API_BASE_URL, itemData);
+  createItem: async (itemData: Omit<InventoryItem, "id">): Promise<InventoryItem> => {
+    const response = await api.post("/inventory", itemData);
     return response.data;
   },
 
   updateItem: async (
     id: number,
-    careHomeId: number,
+    userId: number,
     itemData: Partial<InventoryItem>
   ): Promise<InventoryItem> => {
-    const response = await axios.put(
-      `${API_BASE_URL}/${id}`,
-      {
-        ...itemData,
-        careHomeId,
-      },
-      {
-        params: { careHomeId },
-      }
+    const response = await api.put(
+      `/inventory/${id}`,
+      itemData,
+      { params: { userId } }
     );
     return response.data;
   },
 
-  deleteItem: async (id: number, careHomeId: number): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/${id}`, { params: { careHomeId } });
+  deleteItem: async (id: number, userId: number): Promise<void> => {
+    await api.delete(`/inventory/${id}`, { params: { userId } });
   },
 
-  searchItems: async (
-    query: string,
-    careHomeId: number
-  ): Promise<InventoryItem[]> => {
-    const response = await axios.get(`${API_BASE_URL}/search`, {
-      params: { q: query, careHomeId },
+  searchItems: async (query: string, userId: number): Promise<InventoryItem[]> => {
+    const response = await api.get("/inventory/search", {
+      params: { q: query, userId },
     });
     return response.data;
   },
