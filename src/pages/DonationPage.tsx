@@ -1,62 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Plus, Trash, Settings, Gift } from 'lucide-react';
 import DonorSidebar from '../components/DonorSidebar';
 import Navbar from '../components/NavBarAuth';
+import Table from '../components/Table';
+import Pagination from '../components/Pagination';
+import SearchBar from '../components/SearchBar';
 import { NeedsService } from '../services/api';
-import { NeedItem } from '../Types/types';
+import { NeedTableItem } from '../Types/types';
+import { useAuth } from '../context/AuthContext';
 
-const DonationPage: React.FC = () => {
+const DonorNeedsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { needId } = useParams<{ needId: string }>();
-  const [need, setNeed] = useState<NeedItem | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
+  const { userId } = useParams<{ userId: string }>();
+  const { user } = useAuth();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [needsData, setNeedsData] = useState<NeedTableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDonating, setIsDonating] = useState(false);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(needsData.length / itemsPerPage);
 
   useEffect(() => {
-    const fetchNeed = async () => {
+    const fetchNeeds = async () => {
       try {
-        if (!needId) throw new Error('No need ID provided');
+        if (!userId) throw new Error('No user ID provided');
         
-        // First get with temporary careHomeId to get the actual careHomeId
-        const tempNeed = await NeedsService.getNeedById(parseInt(needId), 1);
-        if (!tempNeed) throw new Error('Need not found');
-        
-        // Then get with proper careHomeId
-        const data = await NeedsService.getNeedById(parseInt(needId), tempNeed.careHomeId);
-        setNeed(data);
+        const data = await NeedsService.getAllNeeds(parseInt(userId));
+        const tableData = data.map(item => ({
+          id: item.id,
+          name: item.itemName,
+          requiredQuantity: item.requiredQuantity,
+          currentQuantity: item.currentQuantity,
+          category: item.category,
+          urgencyLevel: item.urgencyLevel
+        }));
+        setNeedsData(tableData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch need details');
+        setError(err instanceof Error ? err.message : 'Failed to fetch needs');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNeed();
-  }, [needId]);
+    fetchNeeds();
+  }, [userId]);
 
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value)) {
-      setQuantity(Math.max(1, Math.min(value, need ? need.requiredQuantity - need.currentQuantity : 1)));
-    }
+  const filteredData = needsData.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
   };
 
-  const handleDonate = () => {
-    setIsDonating(true);
-    setTimeout(() => {
-      alert(`Donation submitted successfully!\nItem: ${need?.itemName}\nQuantity: ${quantity}`);
-      navigate('/donor_dashboard');
-      setIsDonating(false);
-    }, 1000);
+  const handleDonateClick = (needId: number) => {
+    navigate(`/donate/${needId}`);
   };
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
-  if (!need) return <div className="text-center p-8">Need not found</div>;
-
-  const maxQuantity = need.requiredQuantity - need.currentQuantity;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -65,67 +78,55 @@ const DonationPage: React.FC = () => {
         <DonorSidebar activePage="donor-needs" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">
-            Make a Donation
+            Care Home Needs
           </h1>
           
-          <div className="bg-white rounded-lg shadow p-6 max-w-2xl mx-auto">
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Summary of Donation</h2>
-              <div className="space-y-2">
-                <p><span className="font-medium">Item Name:</span> {need.itemName}</p>
-                <p><span className="font-medium">Required Quantity:</span> {need.requiredQuantity}</p>
-                <p><span className="font-medium">Current Quantity:</span> {need.currentQuantity}</p>
-                <p>
-                  <span className="font-medium">Urgency Level:</span> 
-                  <span className={`inline-block ml-2 px-2 py-1 rounded-full text-xs ${
-                    need.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
-                    need.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {need.urgencyLevel}
-                  </span>
-                </p>
-                <p><span className="font-medium">Care Home:</span> Haven of Hope Senior Care</p>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Quantity to Donate</h2>
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  min="1"
-                  max={maxQuantity}
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  className="border border-gray-300 rounded-md px-4 py-2 w-24 mr-4"
-                />
-                <span className="text-gray-600">
-                  Max {maxQuantity} units - Cannot exceed the limit
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => navigate(-1)}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDonate}
-                disabled={isDonating}
-                className="px-6 py-2 bg-[#63C6F7] text-white rounded-md hover:bg-[#42b5e8] disabled:opacity-50"
-              >
-                {isDonating ? 'Processing...' : 'Donate Now'}
-              </button>
-            </div>
+          <div className="flex justify-between items-center mb-6">
+            <SearchBar onSearch={handleSearch} placeholder="Search needs..." />
           </div>
+          
+          <div className="bg-white rounded-md shadow overflow-hidden">
+            <Table<NeedTableItem>
+              columns={[
+                { header: "Item Name", accessor: "name" },
+                { header: "Required Qty", accessor: "requiredQuantity" },
+                { header: "Current Qty", accessor: "currentQuantity" },
+                { header: "Category", accessor: "category" },
+                { 
+                  header: "Urgency", 
+                  accessor: (item: NeedTableItem) => (
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      item.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
+                      item.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {item.urgencyLevel}
+                    </span>
+                  )
+                },
+                {
+                  header: "Actions",
+                  accessor: (item: NeedTableItem) => (
+                    <div className="flex space-x-4">
+                      <button 
+                        className="text-green-500 hover:text-green-700" 
+                        onClick={() => handleDonateClick(item.id)}
+                        title="Donate"
+                      >
+                        <Gift size={18} />
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+              data={paginatedData}
+            />
+          </div>
+          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
         </div>
       </div>
     </div>
   );
 };
 
-export default DonationPage;
+export default DonorNeedsPage;

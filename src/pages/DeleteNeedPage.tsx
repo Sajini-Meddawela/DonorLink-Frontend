@@ -3,24 +3,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import { NeedsService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const DeleteNeedPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const deleteNeed = async () => {
       try {
-        if (!id) {
-          throw new Error('No ID provided');
+        if (!id || !user) {
+          throw new Error('No ID provided or user not authenticated');
         }
         
-        // First get the need to get the careHomeId
-        const need = await NeedsService.getNeedById(parseInt(id), 1); // Temporary careHomeId
-        if (!need) throw new Error('Need not found');
-        
-        // Then delete with proper careHomeId
-        await NeedsService.deleteNeed(parseInt(id), need.careHomeId);
+        await NeedsService.deleteNeed(parseInt(id), user.id);
         navigate('/needs', { state: { message: 'Need deleted successfully' } });
       } catch (error) {
         console.error('Error deleting need:', error);
@@ -29,7 +26,7 @@ const DeleteNeedPage: React.FC = () => {
     };
 
     deleteNeed();
-  }, [id, navigate]);
+  }, [id, navigate, user]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

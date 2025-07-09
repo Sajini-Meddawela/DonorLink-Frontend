@@ -1,25 +1,24 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/SideBar';
 import Navbar from '../components/NavBarAuth';
 import NeedForm from '../components/NeedForm';
 import { NeedsService } from '../services/api';
 import { NeedItem } from '../Types/types';
+import { useAuth } from '../context/AuthContext';
 
 const AddNeedPage: React.FC = () => {
   const navigate = useNavigate();
-  const { careHomeId } = useParams<{ careHomeId: string }>();
-
-  if (!careHomeId) {
-    navigate('/needs');
-    return null;
-  }
+  const { user } = useAuth();
 
   const handleSubmit = async (formData: Omit<NeedItem, 'id'>) => {
     try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       await NeedsService.createNeed({
         ...formData,
-        careHomeId: parseInt(careHomeId)
+        userId: user.id
       });
       navigate('/needs');
     } catch (error) {
@@ -42,7 +41,6 @@ const AddNeedPage: React.FC = () => {
             onSubmit={handleSubmit} 
             onCancel={handleCancel} 
             initialData={null}
-            careHomeId={parseInt(careHomeId)}
           />
         </div>
       </div>
