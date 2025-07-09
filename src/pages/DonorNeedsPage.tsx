@@ -8,10 +8,12 @@ import Pagination from '../components/Pagination';
 import SearchBar from '../components/SearchBar';
 import { NeedsService } from '../services/api';
 import { NeedTableItem } from '../Types/types';
+import { useAuth } from '../context/AuthContext';
 
 const DonorNeedsPage: React.FC = () => {
   const navigate = useNavigate();
   const { careHomeId } = useParams<{ careHomeId: string }>();
+  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [needsData, setNeedsData] = useState<NeedTableItem[]>([]);
@@ -26,15 +28,14 @@ const DonorNeedsPage: React.FC = () => {
       try {
         if (!careHomeId) throw new Error('No care home ID provided');
         
-        const data = await NeedsService.getAllNeeds(parseInt(careHomeId));
+        const data = await NeedsService.getCareHomeNeeds(parseInt(careHomeId));
         const tableData = data.map(item => ({
           id: item.id,
           name: item.itemName,
           requiredQuantity: item.requiredQuantity,
           currentQuantity: item.currentQuantity,
           category: item.category,
-          urgencyLevel: item.urgencyLevel,
-          careHomeId: item.careHomeId
+          urgencyLevel: item.urgencyLevel
         }));
         setNeedsData(tableData);
       } catch (err) {
@@ -110,6 +111,7 @@ const DonorNeedsPage: React.FC = () => {
                       <button 
                         className="text-green-500 hover:text-green-700" 
                         onClick={() => handleDonateClick(item.id)}
+                        title="Donate"
                       >
                         <Gift size={18} />
                       </button>

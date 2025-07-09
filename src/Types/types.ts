@@ -23,7 +23,7 @@ export interface NeedItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  careHomeId: number; 
+  userId: number; 
 }
 
 export interface NeedTableItem {
@@ -33,7 +33,7 @@ export interface NeedTableItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  careHomeId?: number; 
+  userId?: number; 
 }
 
 export interface MealDonationSlot {

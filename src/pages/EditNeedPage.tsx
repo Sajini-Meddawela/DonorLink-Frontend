@@ -5,10 +5,12 @@ import Navbar from '../components/NavBarAuth';
 import NeedForm from '../components/NeedForm';
 import { NeedsService } from '../services/api';
 import { NeedItem } from '../Types/types';
+import { useAuth } from '../context/AuthContext';
 
 const EditNeedPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [needDetails, setNeedDetails] = useState<NeedItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,15 +18,12 @@ const EditNeedPage: React.FC = () => {
   useEffect(() => {
     const fetchNeed = async () => {
       try {
-        if (!id) throw new Error('No ID provided');
+        if (!id || !user) throw new Error('No ID provided or user not authenticated');
         
-        // First get the need to get the careHomeId
-        const need = await NeedsService.getNeedById(parseInt(id), 1); // Temporary careHomeId
+        const need = await NeedsService.getNeedById(parseInt(id), user.id);
         if (!need) throw new Error('Need not found');
         
-        // Now get the need with proper careHomeId
-        const fullNeed = await NeedsService.getNeedById(parseInt(id), need.careHomeId);
-        setNeedDetails(fullNeed);
+        setNeedDetails(need);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch need');
       } finally {
@@ -33,12 +32,12 @@ const EditNeedPage: React.FC = () => {
     };
 
     fetchNeed();
-  }, [id]);
+  }, [id, user]);
 
   const handleSubmit = async (formData: NeedItem) => {
     try {
-      if (!id || !needDetails) return;
-      await NeedsService.updateNeed(parseInt(id), formData, needDetails.careHomeId);
+      if (!id || !user) return;
+      await NeedsService.updateNeed(parseInt(id), formData, user.id);
       navigate('/needs');
     } catch (error) {
       console.error('Failed to update need:', error);
@@ -65,7 +64,6 @@ const EditNeedPage: React.FC = () => {
             onCancel={handleCancel} 
             initialData={needDetails}
             isEditMode={true}
-            careHomeId={needDetails.careHomeId} 
           />
         </div>
       </div>
