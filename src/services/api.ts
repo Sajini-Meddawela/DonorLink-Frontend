@@ -14,7 +14,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -40,7 +40,9 @@ export const InventoryService = {
     return response.data;
   },
 
-  createItem: async (itemData: Omit<InventoryItem, "id">): Promise<InventoryItem> => {
+  createItem: async (
+    itemData: Omit<InventoryItem, "id">
+  ): Promise<InventoryItem> => {
     const response = await api.post("/inventory", itemData);
     return response.data;
   },
@@ -50,11 +52,9 @@ export const InventoryService = {
     userId: number,
     itemData: Partial<InventoryItem>
   ): Promise<InventoryItem> => {
-    const response = await api.put(
-      `/inventory/${id}`,
-      itemData,
-      { params: { userId } }
-    );
+    const response = await api.put(`/inventory/${id}`, itemData, {
+      params: { userId },
+    });
     return response.data;
   },
 
@@ -62,7 +62,10 @@ export const InventoryService = {
     await api.delete(`/inventory/${id}`, { params: { userId } });
   },
 
-  searchItems: async (query: string, userId: number): Promise<InventoryItem[]> => {
+  searchItems: async (
+    query: string,
+    userId: number
+  ): Promise<InventoryItem[]> => {
     const response = await api.get("/inventory/search", {
       params: { q: query, userId },
     });
@@ -76,9 +79,20 @@ export const NeedsService = {
     return response.data;
   },
 
-  getNeedById: async (id: number, userId: number): Promise<NeedItem> => {
-    const response = await api.get(`/needs/${id}`, { params: { userId } });
-    return response.data;
+  getNeedById: async (id: number, userId?: number): Promise<NeedItem> => {
+    try {
+      const params = userId ? { userId } : {};
+      const response = await api.get(`/needs/${id}`, { params });
+
+      if (response.status === 404) {
+        throw new Error("Need not found");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching need:", error);
+      throw error;
+    }
   },
 
   createNeed: async (needData: Omit<NeedItem, "id">): Promise<NeedItem> => {
@@ -91,7 +105,9 @@ export const NeedsService = {
     needData: Partial<NeedItem>,
     userId: number
   ): Promise<NeedItem> => {
-    const response = await api.put(`/needs/${id}`, needData, { params: { userId } });
+    const response = await api.put(`/needs/${id}`, needData, {
+      params: { userId },
+    });
     return response.data;
   },
 
@@ -101,6 +117,11 @@ export const NeedsService = {
 
   getCareHomeNeeds: async (careHomeId: number): Promise<NeedItem[]> => {
     const response = await api.get(`/needs/carehome/${careHomeId}`);
+    return response.data;
+  },
+
+  getNeedByIdPublic: async (id: number): Promise<NeedItem> => {
+    const response = await api.get(`/needs/public/${id}`);
     return response.data;
   },
 };

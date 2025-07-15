@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Trash, Settings, Gift } from 'lucide-react';
-import DonorSidebar from '../components/DonorSidebar';
-import Navbar from '../components/NavBarAuth';
-import Table from '../components/Table';
-import Pagination from '../components/Pagination';
-import SearchBar from '../components/SearchBar';
-import { NeedsService } from '../services/api';
-import { NeedTableItem } from '../Types/types';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Gift } from "lucide-react";
+import DonorSidebar from "../components/DonorSidebar";
+import Navbar from "../components/NavBarAuth";
+import Table from "../components/Table";
+import Pagination from "../components/Pagination";
+import SearchBar from "../components/SearchBar";
+import { NeedsService } from "../services/api";
+import { NeedTableItem } from "../Types/types";
+import { useAuth } from "../context/AuthContext";
 
 const DonorNeedsPage: React.FC = () => {
   const navigate = useNavigate();
   const { careHomeId } = useParams<{ careHomeId: string }>();
-  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [needsData, setNeedsData] = useState<NeedTableItem[]>([]);
@@ -26,20 +25,20 @@ const DonorNeedsPage: React.FC = () => {
   useEffect(() => {
     const fetchNeeds = async () => {
       try {
-        if (!careHomeId) throw new Error('No care home ID provided');
-        
+        if (!careHomeId) throw new Error("No care home ID provided");
+
         const data = await NeedsService.getCareHomeNeeds(parseInt(careHomeId));
-        const tableData = data.map(item => ({
+        const tableData = data.map((item) => ({
           id: item.id,
           name: item.itemName,
           requiredQuantity: item.requiredQuantity,
           currentQuantity: item.currentQuantity,
           category: item.category,
-          urgencyLevel: item.urgencyLevel
+          urgencyLevel: item.urgencyLevel,
         }));
         setNeedsData(tableData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch needs');
+        setError(err instanceof Error ? err.message : "Failed to fetch needs");
       } finally {
         setLoading(false);
       }
@@ -69,7 +68,8 @@ const DonorNeedsPage: React.FC = () => {
   };
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
-  if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
+  if (error)
+    return <div className="text-center p-8 text-red-500">Error: {error}</div>;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -80,11 +80,11 @@ const DonorNeedsPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-sky-400 mb-6 text-center">
             Care Home Needs
           </h1>
-          
+
           <div className="flex justify-between items-center mb-6">
             <SearchBar onSearch={handleSearch} placeholder="Search needs..." />
           </div>
-          
+
           <div className="bg-white rounded-md shadow overflow-hidden">
             <Table<NeedTableItem>
               columns={[
@@ -92,24 +92,28 @@ const DonorNeedsPage: React.FC = () => {
                 { header: "Required Qty", accessor: "requiredQuantity" },
                 { header: "Current Qty", accessor: "currentQuantity" },
                 { header: "Category", accessor: "category" },
-                { 
-                  header: "Urgency", 
+                {
+                  header: "Urgency",
                   accessor: (item: NeedTableItem) => (
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      item.urgencyLevel === 'High' ? 'bg-red-100 text-red-800' :
-                      item.urgencyLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        item.urgencyLevel === "High"
+                          ? "bg-red-100 text-red-800"
+                          : item.urgencyLevel === "Medium"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
                       {item.urgencyLevel}
                     </span>
-                  )
+                  ),
                 },
                 {
                   header: "Actions",
                   accessor: (item: NeedTableItem) => (
                     <div className="flex space-x-4">
-                      <button 
-                        className="text-green-500 hover:text-green-700" 
+                      <button
+                        className="text-green-500 hover:text-green-700"
                         onClick={() => handleDonateClick(item.id)}
                         title="Donate"
                       >
@@ -122,7 +126,13 @@ const DonorNeedsPage: React.FC = () => {
               data={paginatedData}
             />
           </div>
-          {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </div>
       </div>
     </div>
