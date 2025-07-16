@@ -7,6 +7,8 @@ import {
   NeedItem,
   CareHome,
   InventoryItem,
+  Donation,
+  User,
 } from "../Types/types";
 
 const api = axios.create({
@@ -123,6 +125,20 @@ export const NeedsService = {
   getNeedByIdPublic: async (id: number): Promise<NeedItem> => {
     const response = await api.get(`/needs/public/${id}`);
     return response.data;
+  },
+};
+
+export const DonationsService = {
+  createDonation: async (
+    donationData: Omit<Donation, "id">
+  ): Promise<Donation> => {
+    const response = await api.post("/donations", donationData);
+    return response.data;
+  },
+
+  getDonationById: async (id: number): Promise<Donation & { donor?: User }> => {
+    const response = await api.get(`/donations/${id}`);
+    return response.data as Donation & { donor?: User };
   },
 };
 

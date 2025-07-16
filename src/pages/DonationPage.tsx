@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { NeedsService } from "../services/api";
+import { NeedsService, DonationsService } from "../services/api";
 import { NeedItem } from "../Types/types";
 import { useAuth } from "../context/AuthContext";
 import DonorSidebar from "../components/DonorSidebar";
@@ -14,25 +14,21 @@ const DonationPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [donationQuantity, setDonationQuantity] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchNeed = async () => {
       try {
-        if (!needId) {
-          throw new Error("No need ID provided");
-        }
+        if (!needId) throw new Error("No need ID provided");
 
         const data = await NeedsService.getNeedById(parseInt(needId));
         setNeed(data);
-        // Set initial donation quantity to the remaining needed amount
         if (data) {
-          setDonationQuantity(data.requiredQuantity - data.currentQuantity);
+          const remaining = data.requiredQuantity - data.currentQuantity;
+          setDonationQuantity(Math.max(1, remaining));
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch need";
-        setError(errorMessage);
-        console.error("Error fetching need:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch need");
       } finally {
         setLoading(false);
       }
@@ -42,18 +38,28 @@ const DonationPage: React.FC = () => {
   }, [needId]);
 
   const handleDonate = async () => {
-    try {
-      if (!user?.id || !need) return;
+  if (!user || !need) return;
 
-      // Implement your donation logic here
-      alert(`Donated ${donationQuantity} of ${need.itemName}`);
-      navigate("/donor_dashboard");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to process donation"
-      );
-    }
-  };
+  setIsSubmitting(true);
+  try {
+    const donationData = {
+      donorId: user.id,
+      needId: need.id,
+      quantity: donationQuantity,
+      date: new Date().toISOString(),
+      status: "completed",
+      notes: `Donation of ${donationQuantity} ${need.itemName}`
+    };
+
+    const donation = await DonationsService.createDonation(donationData);
+    navigate(`/donation-receipt/${donation.id}`);
+  } catch (err) {
+    console.error("Donation error:", err);
+    setError(err instanceof Error ? err.message : "Failed to process donation");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error)
@@ -224,9 +230,14 @@ const DonationPage: React.FC = () => {
                 </button>
                 <button
                   onClick={handleDonate}
-                  className="flex-1 px-6 py-3 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-lg font-medium shadow-md transition duration-200 transform hover:scale-105"
+                  disabled={isSubmitting}
+                  className={`flex-1 px-6 py-3 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-lg font-medium shadow-md transition duration-200 ${
+                    isSubmitting
+                      ? "opacity-75 cursor-not-allowed"
+                      : "hover:scale-105"
+                  }`}
                 >
-                  Confirm Donation
+                  {isSubmitting ? "Processing..." : "Confirm Donation"}
                 </button>
               </div>
             </div>
