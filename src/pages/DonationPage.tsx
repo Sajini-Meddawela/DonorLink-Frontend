@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { NeedsService, DonationsService } from "../services/api";
-import { NeedItem } from "../Types/types";
+import {
+  NeedsService,
+  DonationsService,
+  CareHomeService,
+} from "../services/api";
+import { NeedItem, CareHome } from "../Types/types";
 import { useAuth } from "../context/AuthContext";
 import DonorSidebar from "../components/DonorSidebar";
 import Navbar from "../components/NavBarAuth";
@@ -11,55 +15,64 @@ const DonationPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [need, setNeed] = useState<NeedItem | null>(null);
+  const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [donationQuantity, setDonationQuantity] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchNeed = async () => {
+    const fetchNeedAndCareHome = async () => {
       try {
         if (!needId) throw new Error("No need ID provided");
 
         const data = await NeedsService.getNeedById(parseInt(needId));
         setNeed(data);
+
         if (data) {
           const remaining = data.requiredQuantity - data.currentQuantity;
           setDonationQuantity(Math.max(1, remaining));
+
+          const careHomeData = await CareHomeService.getCareHomeDetails(
+            data.userId
+          );
+          setCareHome(careHomeData);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch need");
+        setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNeed();
+    fetchNeedAndCareHome();
   }, [needId]);
 
   const handleDonate = async () => {
-  if (!user || !need) return;
+    if (!user || !need) return;
 
-  setIsSubmitting(true);
-  try {
-    const donationData = {
-      donorId: user.id,
-      needId: need.id,
-      quantity: donationQuantity,
-      date: new Date().toISOString(),
-      status: "completed",
-      notes: `Donation of ${donationQuantity} ${need.itemName}`
-    };
+    setIsSubmitting(true);
+    try {
+      const donationData = {
+        donorId: user.id,
+        needId: need.id,
+        quantity: donationQuantity,
+        date: new Date().toISOString(),
+        status: "completed",
+        notes: `Donation of ${donationQuantity} ${need.itemName}`,
+      };
 
-    const donation = await DonationsService.createDonation(donationData);
-    navigate(`/donation-receipt/${donation.id}`);
-  } catch (err) {
-    console.error("Donation error:", err);
-    setError(err instanceof Error ? err.message : "Failed to process donation");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const donation = await DonationsService.createDonation(donationData);
+      navigate(`/donation-receipt/${donation.id}`);
+    } catch (err) {
+      console.error("Donation error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to process donation"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error)
@@ -74,7 +87,6 @@ const DonationPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden pt-20">
         <DonorSidebar activePage="donor-needs" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
-          {/* Consistent title styling with other pages */}
           <h1 className="text-4xl font-bold text-[#63C6F7] mb-8 text-center">
             Select Quantity to Donate
           </h1>
@@ -153,8 +165,13 @@ const DonationPage: React.FC = () => {
                       Care Home
                     </h3>
                     <p className="text-lg font-medium">
-                      Haven of Hope Senior Care
+                      {careHome?.name || "Loading care home..."}
                     </p>
+                    {careHome?.address && (
+                      <p className="text-sm text-gray-600">
+                        {careHome.address}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

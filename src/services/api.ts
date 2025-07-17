@@ -136,9 +136,16 @@ export const DonationsService = {
     return response.data;
   },
 
-  getDonationById: async (id: number): Promise<Donation & { donor?: User }> => {
+  getDonationById: async (
+    id: number
+  ): Promise<
+    Donation & {
+      donor?: User;
+      need?: NeedItem & { user?: User };
+    }
+  > => {
     const response = await api.get(`/donations/${id}`);
-    return response.data as Donation & { donor?: User };
+    return response.data;
   },
 };
 
