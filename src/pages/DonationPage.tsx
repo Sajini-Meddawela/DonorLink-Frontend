@@ -241,17 +241,15 @@ const DonationPage: React.FC = () => {
               <div className="flex justify-between space-x-4">
                 <button
                   onClick={() => navigate(-1)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200"
+                  className="flex-1 px-4 py-2 border border-[#63C6F7] rounded-full text-[#63C6F7] font-medium hover:bg-[#63C6F7] hover:bg-opacity-10 transition duration-200 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDonate}
                   disabled={isSubmitting}
-                  className={`flex-1 px-6 py-3 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-lg font-medium shadow-md transition duration-200 ${
-                    isSubmitting
-                      ? "opacity-75 cursor-not-allowed"
-                      : "hover:scale-105"
+                  className={`flex-1 px-4 py-2 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-full font-medium transition duration-200 text-sm ${
+                    isSubmitting ? "opacity-75 cursor-not-allowed" : ""
                   }`}
                 >
                   {isSubmitting ? "Processing..." : "Confirm Donation"}

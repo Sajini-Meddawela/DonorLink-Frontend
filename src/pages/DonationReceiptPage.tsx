@@ -97,11 +97,11 @@ const DonationReceiptPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden pt-20">
         <DonorSidebar activePage="donor-needs" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-4xl font-bold text-[#63C6F7]">
+          <div className="flex flex-col items-center mb-8">
+            <h1 className="text-4xl font-bold text-[#63C6F7] text-center">
               Donation Receipt
             </h1>
-            <div className="text-gray-500">
+            <div className="text-gray-500 mt-2">
               {new Date(donation.date).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
@@ -192,13 +192,13 @@ const DonationReceiptPage: React.FC = () => {
           <div className="flex justify-center space-x-6 mt-8">
             <button
               onClick={handleCancel}
-              className="px-8 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200"
+              className="px-8 py-2 border-2 border-[#63C6F7] rounded-full text-[#63C6F7] font-medium hover:bg-[#63C6F7] hover:bg-opacity-10 transition duration-200 text-sm"
             >
               Back to Dashboard
             </button>
             <button
               onClick={handleDownloadPDF}
-              className="px-8 py-3 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-lg font-medium shadow-md transition duration-200 hover:scale-105"
+              className="px-8 py-2 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-full font-medium transition duration-200 text-sm"
             >
               Download Receipt
             </button>
