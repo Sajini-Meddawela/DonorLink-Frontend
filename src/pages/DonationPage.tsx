@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { NeedsService } from "../services/api";
-import { NeedItem } from "../Types/types";
+import {
+  NeedsService,
+  DonationsService,
+  CareHomeService,
+} from "../services/api";
+import { NeedItem, CareHome } from "../Types/types";
 import { useAuth } from "../context/AuthContext";
 import DonorSidebar from "../components/DonorSidebar";
 import Navbar from "../components/NavBarAuth";
@@ -11,47 +15,62 @@ const DonationPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [need, setNeed] = useState<NeedItem | null>(null);
+  const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [donationQuantity, setDonationQuantity] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchNeed = async () => {
+    const fetchNeedAndCareHome = async () => {
       try {
-        if (!needId) {
-          throw new Error("No need ID provided");
-        }
+        if (!needId) throw new Error("No need ID provided");
 
         const data = await NeedsService.getNeedById(parseInt(needId));
         setNeed(data);
-        // Set initial donation quantity to the remaining needed amount
+
         if (data) {
-          setDonationQuantity(data.requiredQuantity - data.currentQuantity);
+          const remaining = data.requiredQuantity - data.currentQuantity;
+          setDonationQuantity(Math.max(1, remaining));
+
+          const careHomeData = await CareHomeService.getCareHomeDetails(
+            data.userId
+          );
+          setCareHome(careHomeData);
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch need";
-        setError(errorMessage);
-        console.error("Error fetching need:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNeed();
+    fetchNeedAndCareHome();
   }, [needId]);
 
   const handleDonate = async () => {
-    try {
-      if (!user?.id || !need) return;
+    if (!user || !need) return;
 
-      // Implement your donation logic here
-      alert(`Donated ${donationQuantity} of ${need.itemName}`);
-      navigate("/donor_dashboard");
+    setIsSubmitting(true);
+    try {
+      const donationData = {
+        donorId: user.id,
+        needId: need.id,
+        quantity: donationQuantity,
+        date: new Date().toISOString(),
+        status: "completed",
+        notes: `Donation of ${donationQuantity} ${need.itemName}`,
+      };
+
+      const donation = await DonationsService.createDonation(donationData);
+      navigate(`/donation-receipt/${donation.id}`);
     } catch (err) {
+      console.error("Donation error:", err);
       setError(
         err instanceof Error ? err.message : "Failed to process donation"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,7 +87,6 @@ const DonationPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden pt-20">
         <DonorSidebar activePage="donor-needs" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
-          {/* Consistent title styling with other pages */}
           <h1 className="text-4xl font-bold text-[#63C6F7] mb-8 text-center">
             Select Quantity to Donate
           </h1>
@@ -147,8 +165,13 @@ const DonationPage: React.FC = () => {
                       Care Home
                     </h3>
                     <p className="text-lg font-medium">
-                      Haven of Hope Senior Care
+                      {careHome?.name || "Loading care home..."}
                     </p>
+                    {careHome?.address && (
+                      <p className="text-sm text-gray-600">
+                        {careHome.address}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -218,15 +241,18 @@ const DonationPage: React.FC = () => {
               <div className="flex justify-between space-x-4">
                 <button
                   onClick={() => navigate(-1)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition duration-200"
+                  className="flex-1 px-4 py-2 border border-[#63C6F7] rounded-full text-[#63C6F7] font-medium hover:bg-[#63C6F7] hover:bg-opacity-10 transition duration-200 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDonate}
-                  className="flex-1 px-6 py-3 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-lg font-medium shadow-md transition duration-200 transform hover:scale-105"
+                  disabled={isSubmitting}
+                  className={`flex-1 px-4 py-2 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-full font-medium transition duration-200 text-sm ${
+                    isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
                 >
-                  Confirm Donation
+                  {isSubmitting ? "Processing..." : "Confirm Donation"}
                 </button>
               </div>
             </div>

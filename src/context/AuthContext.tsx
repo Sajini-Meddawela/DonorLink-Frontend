@@ -6,7 +6,9 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  phone?: string;
+  address?: string;
+  role: 'DONOR' | 'CAREHOME';
   isVerified: boolean;
 }
 

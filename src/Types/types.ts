@@ -1,3 +1,13 @@
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  role: 'DONOR' | 'CAREHOME';
+  isVerified: boolean;
+}
+
 export interface InventoryItem {
   id: number;
   itemName: string;
@@ -44,6 +54,7 @@ export interface MealDonationSlot {
   careHomeId: number;
   donorId?: number;
 }
+
 export interface CalendarDay {
   date: Date;
   breakfast?: MealDonationSlot;
@@ -59,4 +70,15 @@ export interface CareHome {
   phone: string;
   email: string;
   category: string;
+}
+
+export interface Donation {
+  id: number;
+  quantity: number;
+  date: string;
+  status: string;
+  donorId: number;
+  needId: number;
+  need?: NeedItem;  
+  donor?: User;    
 }
