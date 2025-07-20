@@ -76,9 +76,10 @@ export interface Donation {
   id: number;
   quantity: number;
   date: string;
-  status: string;
+  status: "pending" | "completed" | "rejected";
+  notes?: string;
   donorId: number;
   needId: number;
-  need?: NeedItem;  
-  donor?: User;    
+  need?: NeedItem & { user?: User };
+  donor?: User;
 }

@@ -1,17 +1,24 @@
 import React from "react";
 import { User, ClipboardList, Gift, Calendar } from "lucide-react";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
   text: string;
   isActive?: boolean;
-  to: string; 
+  to: string;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text, isActive, to }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  icon,
+  text,
+  isActive,
+  to,
+}) => {
   return (
-    <Link to={to} className="block"> {/* Changed to Link */}
+    <Link to={to} className="block">
+      {" "}
+      {/* Changed to Link */}
       <div
         className={`flex items-center p-4 hover:bg-blue-100 transition-all 
         ${isActive ? "bg-sky-200 font-semibold" : "bg-white"}`}
@@ -29,11 +36,36 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activePage }) => {
   const menuItems = [
-    { id: "dashboard", text: "Dashboard", icon: <User size={20} />, to: "/care_dashboard" },
-    { id: "inventory", text: "Inventory Management", icon: <ClipboardList size={20} />, to: "/inventory" },
-    { id: "need-list", text: "Need List", icon: <ClipboardList size={20} />, to: "/needs" },
-    { id: "donation", text: "Donation Received", icon: <Gift size={20} />, to: "/donations" },
-    { id: "scheduling", text: "Scheduling", icon: <Calendar size={20} />, to: "/scheduling" },
+    {
+      id: "dashboard",
+      text: "Dashboard",
+      icon: <User size={20} />,
+      to: "/care_dashboard",
+    },
+    {
+      id: "inventory",
+      text: "Inventory Management",
+      icon: <ClipboardList size={20} />,
+      to: "/inventory",
+    },
+    {
+      id: "need-list",
+      text: "Need List",
+      icon: <ClipboardList size={20} />,
+      to: "/needs",
+    },
+    {
+      id: "donation",
+      text: "Donation Received",
+      icon: <Gift size={20} />,
+      to: "/donations/received",
+    },
+    {
+      id: "scheduling",
+      text: "Scheduling",
+      icon: <Calendar size={20} />,
+      to: "/scheduling",
+    },
   ];
 
   return (

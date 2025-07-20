@@ -147,6 +147,15 @@ export const DonationsService = {
     const response = await api.get(`/donations/${id}`);
     return response.data;
   },
+  getCareHomeDonations: async (careHomeId: number): Promise<Donation[]> => {
+    const response = await api.get(`/donations/carehome/${careHomeId}`);
+    return response.data;
+  },
+
+  updateDonationStatus: async (id: number, status: string): Promise<Donation> => {
+    const response = await api.patch(`/donations/${id}/status`, { status });
+    return response.data;
+  },
 };
 
 export const MealDonationService = {
