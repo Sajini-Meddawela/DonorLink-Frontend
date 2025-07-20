@@ -147,17 +147,25 @@ export const DonationsService = {
     const response = await api.get(`/donations/${id}`);
     return response.data;
   },
+
+  getDonationsByDonor: async (donorId: number): Promise<Donation[]> => {
+    const response = await api.get(`/donations/donor/${donorId}`);
+    return response.data;
+  },
+
   getCareHomeDonations: async (careHomeId: number): Promise<Donation[]> => {
     const response = await api.get(`/donations/carehome/${careHomeId}`);
     return response.data;
   },
 
-  updateDonationStatus: async (id: number, status: string): Promise<Donation> => {
+  updateDonationStatus: async (
+    id: number,
+    status: string
+  ): Promise<Donation> => {
     const response = await api.patch(`/donations/${id}/status`, { status });
     return response.data;
   },
 };
-
 export const MealDonationService = {
   async getSlots(
     careHomeId: number,

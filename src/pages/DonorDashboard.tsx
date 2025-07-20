@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/NavBarAuth";
 import DashboardCard from "../components/DashboardCard";
-import DonorDashboardBg from "../Assets/CareHomeDashboard.png";
+import DonorDashboardBg from "../Assets/CareHomeDashboard.jpg";
 import {
   Home,
   Gift,
@@ -34,7 +34,7 @@ const DonorDashboard: React.FC = () => {
       title: "Donation\nMade",
       icon: Gift,
       color: "bg-[#63C6F7] hover:bg-[#63C6F7]/90",
-      path: "/donation-made",
+      path: "/donations/made",
     },
     {
       title: "Urgent\nNeeds",
