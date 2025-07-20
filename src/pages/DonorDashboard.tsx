@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/NavBarAuth";
 import DashboardCard from "../components/DashboardCard";
-import DonorDashboardBg from "../Assets/CareHomeDashboard.jpg";
+import DonorDashboardBg from "../Assets/CareHomeDashboard.png";
 import {
   Home,
   Gift,
