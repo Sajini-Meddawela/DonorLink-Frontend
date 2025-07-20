@@ -48,32 +48,31 @@ const DonationPage: React.FC = () => {
     fetchNeedAndCareHome();
   }, [needId]);
 
-  const handleDonate = async () => {
-    if (!user || !need) return;
+const handleDonate = async () => {
+  if (!user || !need) return;
 
-    setIsSubmitting(true);
-    try {
-      const donationData = {
-        donorId: user.id,
-        needId: need.id,
-        quantity: donationQuantity,
-        date: new Date().toISOString(),
-        status: "completed",
-        notes: `Donation of ${donationQuantity} ${need.itemName}`,
-      };
+  setIsSubmitting(true);
+  try {
+    const donationData = {
+      donorId: user.id,
+      needId: need.id,
+      quantity: donationQuantity,
+      date: new Date().toISOString(),
+      status: "pending" as const, // Mark as const to ensure type is "pending" not string
+      notes: `Donation of ${donationQuantity} ${need.itemName}`,
+    };
 
-      const donation = await DonationsService.createDonation(donationData);
-      navigate(`/donation-receipt/${donation.id}`);
-    } catch (err) {
-      console.error("Donation error:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to process donation"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+    const donation = await DonationsService.createDonation(donationData);
+    navigate(`/donation-receipt/${donation.id}`);
+  } catch (err) {
+    console.error("Donation error:", err);
+    setError(
+      err instanceof Error ? err.message : "Failed to process donation"
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error)
     return <div className="text-center p-8 text-red-500">Error: {error}</div>;
@@ -241,14 +240,14 @@ const DonationPage: React.FC = () => {
               <div className="flex justify-between space-x-4">
                 <button
                   onClick={() => navigate(-1)}
-                  className="flex-1 px-4 py-2 border border-[#63C6F7] rounded-full text-[#63C6F7] font-medium hover:bg-[#63C6F7] hover:bg-opacity-10 transition duration-200 text-sm"
+                  className="w-52 px-4 py-2 border border-[#63C6F7] rounded-full text-[#63C6F7] font-medium hover:bg-[#63C6F7] hover:bg-opacity-10 transition duration-200 text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDonate}
                   disabled={isSubmitting}
-                  className={`flex-1 px-4 py-2 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-full font-medium transition duration-200 text-sm ${
+                  className={`w-52 px-4 py-2 bg-[#63C6F7] hover:bg-[#52b0e0] text-white rounded-full font-medium transition duration-200 text-sm ${
                     isSubmitting ? "opacity-75 cursor-not-allowed" : ""
                   }`}
                 >
