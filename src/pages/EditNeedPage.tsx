@@ -34,16 +34,20 @@ const EditNeedPage: React.FC = () => {
     fetchNeed();
   }, [id, user]);
 
-  const handleSubmit = async (formData: NeedItem) => {
+  const handleSubmit = async (formData: Omit<NeedItem, 'id'>) => {
     try {
       if (!id || !user) return;
-      await NeedsService.updateNeed(parseInt(id), formData, user.id);
+      await NeedsService.updateNeed(parseInt(id), {
+        ...formData,
+        id: parseInt(id) 
+      }, user.id);
       navigate('/needs');
     } catch (error) {
       console.error('Failed to update need:', error);
       alert('Failed to update need. Please try again.');
     }
   };
+
 
   const handleCancel = () => {
     navigate('/needs');

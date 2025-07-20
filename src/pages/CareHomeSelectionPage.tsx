@@ -3,6 +3,7 @@ import axios from "axios";
 import DonorSidebar from "../components/DonorSidebar";
 import Navbar from "../components/NavBarAuth";
 import { useNavigate } from "react-router-dom";
+import Pagination from "../components/Pagination"; 
 
 interface CareHome {
   id: number;
@@ -136,26 +137,12 @@ const CareHomeSelectionPage: React.FC = () => {
                   ))}
                 </div>
                 
-                {/* Pagination controls */}
-                <div className="flex justify-between items-center mt-4">
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <span>
-                    Page {pagination.page} of {pagination.totalPages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
+                {/* Replaced with our Pagination component */}
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                />
               </>
             )}
           </div>

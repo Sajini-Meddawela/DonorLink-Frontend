@@ -32,7 +32,7 @@ const CareHomeDonationsPage: React.FC = () => {
     "completed"
   );
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
 
   const filteredData = donations.filter((donation) => {
     if (!searchQuery) return true;
@@ -76,7 +76,7 @@ const CareHomeDonationsPage: React.FC = () => {
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleStatusChange = (
@@ -92,21 +92,29 @@ const CareHomeDonationsPage: React.FC = () => {
     if (!selectedDonation?.id) return;
 
     try {
+      setLoading(true);
+
       await DonationsService.updateDonationStatus(
         selectedDonation.id,
         newStatus
       );
 
-      setDonations(
-        donations.map((d) =>
-          d.id === selectedDonation.id ? { ...d, status: newStatus } : d
-        )
-      );
+      const data = await DonationsService.getCareHomeDonations(user?.id || 0);
+      const typedDonations: ExtendedDonation[] = data.map((d) => ({
+        ...d,
+        status:
+          d.status === "completed" || d.status === "rejected"
+            ? d.status
+            : "pending",
+      }));
 
+      setDonations(typedDonations);
       setShowStatusModal(false);
       setSelectedDonation(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update status");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -239,7 +247,7 @@ const CareHomeDonationsPage: React.FC = () => {
 
       {showStatusModal && selectedDonation && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-md shadow-lg">
+          <div className="bg-white p-6 rounded-md shadow-lg max-w-md">
             <h2 className="text-lg font-bold mb-4">Confirm Status Change</h2>
             <p>
               Are you sure you want to mark donation of{" "}
@@ -248,18 +256,50 @@ const CareHomeDonationsPage: React.FC = () => {
               </strong>{" "}
               as <strong>{newStatus}</strong>?
             </p>
+
+            {newStatus === "rejected" && (
+              <div className="mt-3 p-3 bg-red-50 rounded-md">
+                <p className="text-red-600 font-medium">Important:</p>
+                <ul className="list-disc pl-5 mt-1 text-red-600">
+                  <li>
+                    This will remove {selectedDonation.quantity} from fulfilled
+                    items
+                  </li>
+                  <li>
+                    The need will show as requiring {selectedDonation.quantity}{" "}
+                    more items
+                  </li>
+                </ul>
+              </div>
+            )}
+
+            {newStatus === "completed" &&
+              selectedDonation.status === "rejected" && (
+                <div className="mt-3 p-3 bg-green-50 rounded-md">
+                  <p className="text-green-600 font-medium">Note:</p>
+                  <ul className="list-disc pl-5 mt-1 text-green-600">
+                    <li>
+                      This will add {selectedDonation.quantity} to fulfilled
+                      items
+                    </li>
+                    <li>
+                      The need will show as requiring{" "}
+                      {selectedDonation.quantity} fewer items
+                    </li>
+                  </ul>
+                </div>
+              )}
+
             <div className="mt-4 flex justify-end space-x-4">
               <button
-                className="px-4 py-2 bg-gray-300 rounded-full"
+                className="px-4 py-2 bg-gray-300 rounded-full hover:bg-gray-400 transition"
                 onClick={() => setShowStatusModal(false)}
               >
                 Cancel
               </button>
               <button
-                className={`px-4 py-2 text-white rounded-full ${
-                  newStatus === "completed"
-                    ? "bg-green-500 hover:bg-green-600"
-                    : "bg-red-500 hover:bg-red-600"
+                className={`px-4 py-2 text-white rounded-full hover:opacity-90 transition ${
+                  newStatus === "completed" ? "bg-green-500" : "bg-red-500"
                 }`}
                 onClick={confirmStatusChange}
               >
