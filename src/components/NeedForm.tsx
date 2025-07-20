@@ -2,27 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { NeedItem } from '../Types/types';
 
 interface NeedFormProps {
-  onSubmit: (formData: NeedItem) => void;
+  onSubmit: (formData: Omit<NeedItem, 'id'>) => void;
   onCancel: () => void;
   initialData: NeedItem | null;
   isEditMode?: boolean;
 }
-
 const NeedForm: React.FC<NeedFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
   isEditMode = false
 }) => {
-  const [formData, setFormData] = useState<NeedItem>({
-    id: 0,
-    itemName: '',
-    requiredQuantity: 0,
-    currentQuantity: 0,
-    category: 'Food',
-    urgencyLevel: 'Medium',
-    userId: 0
-  });
+ const [formData, setFormData] = useState<Omit<NeedItem, 'id'>>({
+  itemName: '',
+  requiredQuantity: 0,
+  currentQuantity: 0,
+  category: 'Food',
+  urgencyLevel: 'Medium',
+  userId: 0
+});
 
   useEffect(() => {
     if (initialData) {
