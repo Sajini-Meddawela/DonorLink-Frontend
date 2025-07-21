@@ -1,3 +1,16 @@
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  role: 'DONOR' | 'CAREHOME';
+  isVerified: boolean;
+  registrationNo?: string;  
+  category?: string;        
+  profileImage?: string;    
+}
+
 export interface InventoryItem {
   id: number;
   itemName: string;
@@ -5,15 +18,15 @@ export interface InventoryItem {
   stockLevel: number;
   reorderLevel: number;
   itemDescription?: string;
-  careHomeId: number;
+  userId: number;
 }
+
 export interface InventoryTableItem {
   id: number;
   name: string;
   category: string;
   stockLevel: number;
   reorderLevel: number;
-  careHomeId?: number; 
 }
 
 export interface NeedItem {
@@ -23,7 +36,7 @@ export interface NeedItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  careHomeId: number; 
+  userId: number; 
 }
 
 export interface NeedTableItem {
@@ -33,7 +46,7 @@ export interface NeedTableItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  careHomeId?: number; 
+  userId?: number; 
 }
 
 export interface MealDonationSlot {
@@ -44,6 +57,7 @@ export interface MealDonationSlot {
   careHomeId: number;
   donorId?: number;
 }
+
 export interface CalendarDay {
   date: Date;
   breakfast?: MealDonationSlot;
@@ -59,4 +73,16 @@ export interface CareHome {
   phone: string;
   email: string;
   category: string;
+}
+
+export interface Donation {
+  id: number;
+  quantity: number;
+  date: string;
+  status: "pending" | "completed" | "rejected";
+  notes?: string;
+  donorId: number;
+  needId: number;
+  need?: NeedItem & { user?: User };
+  donor?: User;
 }

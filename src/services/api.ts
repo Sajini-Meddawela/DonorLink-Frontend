@@ -7,6 +7,8 @@ import {
   NeedItem,
   CareHome,
   InventoryItem,
+  Donation,
+  User,
 } from "../Types/types";
 
 const api = axios.create({
@@ -14,7 +16,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -40,7 +42,9 @@ export const InventoryService = {
     return response.data;
   },
 
-  createItem: async (itemData: Omit<InventoryItem, "id">): Promise<InventoryItem> => {
+  createItem: async (
+    itemData: Omit<InventoryItem, "id">
+  ): Promise<InventoryItem> => {
     const response = await api.post("/inventory", itemData);
     return response.data;
   },
@@ -50,11 +54,9 @@ export const InventoryService = {
     userId: number,
     itemData: Partial<InventoryItem>
   ): Promise<InventoryItem> => {
-    const response = await api.put(
-      `/inventory/${id}`,
-      itemData,
-      { params: { userId } }
-    );
+    const response = await api.put(`/inventory/${id}`, itemData, {
+      params: { userId },
+    });
     return response.data;
   },
 
@@ -62,7 +64,10 @@ export const InventoryService = {
     await api.delete(`/inventory/${id}`, { params: { userId } });
   },
 
-  searchItems: async (query: string, userId: number): Promise<InventoryItem[]> => {
+  searchItems: async (
+    query: string,
+    userId: number
+  ): Promise<InventoryItem[]> => {
     const response = await api.get("/inventory/search", {
       params: { q: query, userId },
     });
@@ -71,46 +76,96 @@ export const InventoryService = {
 };
 
 export const NeedsService = {
-  getAllNeeds: async (careHomeId: number): Promise<NeedItem[]> => {
+  getAllNeeds: async (userId: number): Promise<NeedItem[]> => {
+    const response = await api.get("/needs", { params: { userId } });
+    return response.data;
+  },
+
+  getNeedById: async (id: number, userId?: number): Promise<NeedItem> => {
     try {
-      const response = await axios.get(`${NEEDS_BASE_URL}/carehome/${careHomeId}`);
+      const params = userId ? { userId } : {};
+      const response = await api.get(`/needs/${id}`, { params });
+
+      if (response.status === 404) {
+        throw new Error("Need not found");
+      }
+
       return response.data;
     } catch (error) {
-      console.error('Error fetching needs:', error);
+      console.error("Error fetching need:", error);
       throw error;
     }
   },
 
-  getNeedById: async (id: number, careHomeId: number): Promise<NeedItem> => {
-    const response = await axios.get(`${NEEDS_BASE_URL}/${id}`, {
-      params: { careHomeId }
-    });
-    return response.data;
-  },
-
   createNeed: async (needData: Omit<NeedItem, "id">): Promise<NeedItem> => {
-    const response = await axios.post(NEEDS_BASE_URL, needData);
+    const response = await api.post("/needs", needData);
     return response.data;
   },
 
   updateNeed: async (
     id: number,
     needData: Partial<NeedItem>,
-    careHomeId: number
+    userId: number
   ): Promise<NeedItem> => {
-    const response = await axios.put(`${NEEDS_BASE_URL}/${id}`, needData, {
-      params: { careHomeId }
+    const response = await api.put(`/needs/${id}`, needData, {
+      params: { userId },
     });
     return response.data;
   },
 
-  deleteNeed: async (id: number, careHomeId: number): Promise<void> => {
-    await axios.delete(`${NEEDS_BASE_URL}/${id}`, {
-      params: { careHomeId }
-    });
+  deleteNeed: async (id: number, userId: number): Promise<void> => {
+    await api.delete(`/needs/${id}`, { params: { userId } });
+  },
+
+  getCareHomeNeeds: async (careHomeId: number): Promise<NeedItem[]> => {
+    const response = await api.get(`/needs/carehome/${careHomeId}`);
+    return response.data;
+  },
+
+  getNeedByIdPublic: async (id: number): Promise<NeedItem> => {
+    const response = await api.get(`/needs/public/${id}`);
+    return response.data;
   },
 };
 
+export const DonationsService = {
+  createDonation: async (
+    donationData: Omit<Donation, "id">
+  ): Promise<Donation> => {
+    const response = await api.post("/donations", donationData);
+    return response.data;
+  },
+
+  getDonationById: async (
+    id: number
+  ): Promise<
+    Donation & {
+      donor?: User;
+      need?: NeedItem & { user?: User };
+    }
+  > => {
+    const response = await api.get(`/donations/${id}`);
+    return response.data;
+  },
+
+  getDonationsByDonor: async (donorId: number): Promise<Donation[]> => {
+    const response = await api.get(`/donations/donor/${donorId}`);
+    return response.data;
+  },
+
+  getCareHomeDonations: async (careHomeId: number): Promise<Donation[]> => {
+    const response = await api.get(`/donations/carehome/${careHomeId}`);
+    return response.data;
+  },
+
+  updateDonationStatus: async (
+    id: number,
+    status: string
+  ): Promise<Donation> => {
+    const response = await api.patch(`/donations/${id}/status`, { status });
+    return response.data;
+  },
+};
 export const MealDonationService = {
   async getSlots(
     careHomeId: number,
@@ -175,4 +230,21 @@ export const CareHomeService = {
     );
     return response.data;
   },
+};
+
+export const UserService = {
+  getUserById: async (id: number): Promise<User> => {
+    const response = await api.get(`/v1/users/${id}`);
+    return response.data;
+  },
+
+  updateUser: async (id: number, userData: Partial<User>): Promise<User> => {
+    const response = await api.put(`/v1/users/${id}`, userData);
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get('/v1/users/me');
+    return response.data;
+  }
 };
