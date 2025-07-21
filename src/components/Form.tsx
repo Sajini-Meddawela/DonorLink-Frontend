@@ -1,49 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { InventoryItem } from '../Types/types';
 
 interface InventoryFormProps {
-  onSubmit: (formData: InventoryItem) => void;
+  onSubmit: (formData: any) => void;
   onCancel: () => void;
-  initialData: InventoryItem | null;
+  initialData: any;
   isEditMode?: boolean;
-  careHomeId: number; 
 }
 
 const InventoryForm: React.FC<InventoryFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
-  isEditMode = false,
-  careHomeId
+  isEditMode = false
 }) => {
-  const [formData, setFormData] = useState<InventoryItem>({
-    id: 0,
+  const [formData, setFormData] = useState({
     itemName: '',
     category: 'Food',
     stockLevel: 0,
     reorderLevel: 0,
-    itemDescription: '',
-    careHomeId: careHomeId 
+    itemDescription: ''
   });
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        id: initialData.id || 0,
-        itemName: initialData.itemName,
-        category: initialData.category,
-        stockLevel: initialData.stockLevel,
-        reorderLevel: initialData.reorderLevel,
-        itemDescription: initialData.itemDescription || '',
-        careHomeId: initialData.careHomeId
+        itemName: initialData.itemName || '',
+        category: initialData.category || 'Food',
+        stockLevel: initialData.stockLevel || 0,
+        reorderLevel: initialData.reorderLevel || 0,
+        itemDescription: initialData.itemDescription || ''
       });
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        careHomeId
-      }));
     }
-  }, [initialData, careHomeId]);
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -121,7 +109,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         <label className="block text-gray-700 mb-2">Item Description</label>
         <textarea
           name="itemDescription"
-          value={formData.itemDescription || ''}
+          value={formData.itemDescription}
           onChange={handleChange}
           className="w-full p-2 border rounded"
           rows={3}

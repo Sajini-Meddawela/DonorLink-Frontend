@@ -1,49 +1,32 @@
-import { NeedItem } from '../Types/types';
 import React, { useState, useEffect } from 'react';
+import { NeedItem } from '../Types/types';
 
 interface NeedFormProps {
-  onSubmit: (formData: NeedItem) => void;
+  onSubmit: (formData: Omit<NeedItem, 'id'>) => void;
   onCancel: () => void;
   initialData: NeedItem | null;
   isEditMode?: boolean;
-  careHomeId: number; 
 }
-
 const NeedForm: React.FC<NeedFormProps> = ({ 
   onSubmit, 
   onCancel, 
   initialData,
-  isEditMode = false,
-  careHomeId 
+  isEditMode = false
 }) => {
-  const [formData, setFormData] = useState<NeedItem>({
-    id: 0,
-    itemName: '',
-    requiredQuantity: 0,
-    currentQuantity: 0,
-    category: 'Food',
-    urgencyLevel: 'Medium',
-    careHomeId: careHomeId || 1
-  });
+ const [formData, setFormData] = useState<Omit<NeedItem, 'id'>>({
+  itemName: '',
+  requiredQuantity: 0,
+  currentQuantity: 0,
+  category: 'Food',
+  urgencyLevel: 'Medium',
+  userId: 0
+});
 
   useEffect(() => {
     if (initialData) {
-      setFormData({
-        id: initialData.id || 0,
-        itemName: initialData.itemName,
-        requiredQuantity: initialData.requiredQuantity,
-        currentQuantity: initialData.currentQuantity,
-        category: initialData.category,
-        urgencyLevel: initialData.urgencyLevel,
-        careHomeId: initialData.careHomeId
-      });
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        careHomeId
-      }));
+      setFormData(initialData);
     }
-  }, [initialData, careHomeId]);
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -130,8 +113,6 @@ const NeedForm: React.FC<NeedFormProps> = ({
           <option value="Low">Low</option>
         </select>
       </div>
-
-      <input type="hidden" name="careHomeId" value={formData.careHomeId} />
 
       <div className="flex justify-between">
         <button 

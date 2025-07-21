@@ -35,6 +35,9 @@ import DonorNeedsPage from "./pages/DonorNeedsPage";
 import DonationPage from "./pages/DonationPage";
 import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/EditProfile";
+import DonationReceiptPage from "./pages/DonationReceiptPage";
+import CareHomeDonationsPage from "./pages/DonationReceived";
+import DonationMadePage from "./pages/DonationMade";
 
 const App: React.FC = () => {
   return (
@@ -100,6 +103,9 @@ const App: React.FC = () => {
                 element={<CareHomeSelectionPage />}
               />
               <Route path="/donate/:needId" element={<DonationPage />} />
+              <Route path="/donation-receipt/:donationId" element={<DonationReceiptPage />} />
+              <Route path="/donations/received" element={<CareHomeDonationsPage />} />
+              <Route path="/donations/made" element={<DonationMadePage />} />
             </Route>
           </Routes>
         </AuthProvider>
