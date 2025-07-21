@@ -6,6 +6,9 @@ export interface User {
   address?: string;
   role: 'DONOR' | 'CAREHOME';
   isVerified: boolean;
+  registrationNo?: string;  
+  category?: string;        
+  profileImage?: string;    
 }
 
 export interface InventoryItem {

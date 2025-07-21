@@ -34,6 +34,7 @@ import CareHomeSelectionPage from "./pages/CareHomeSelectionPage";
 import DonorNeedsPage from "./pages/DonorNeedsPage";
 import DonationPage from "./pages/DonationPage";
 import ResetPassword from "./pages/ResetPassword";
+import ProfilePage from "./pages/EditProfile";
 import DonationReceiptPage from "./pages/DonationReceiptPage";
 import CareHomeDonationsPage from "./pages/DonationReceived";
 import DonationMadePage from "./pages/DonationMade";
@@ -54,7 +55,10 @@ const App: React.FC = () => {
             <Route path="/caresignup" element={<CareHomeSignup />} />
             <Route path="/donorsignup" element={<DonorSignup />} />
             <Route path="/forgotpw" element={<ForgotPassword />} />
-            <Route path="/passwordverify/:email?" element={<PasswordVerify />} />
+            <Route
+              path="/passwordverify/:email?"
+              element={<PasswordVerify />}
+            />
             <Route path="/reset-password/:email" element={<ResetPassword />} />
             <Route
               path="/confirmation-sent/:email"
@@ -77,6 +81,7 @@ const App: React.FC = () => {
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/care_dashboard" element={<CareDashboard />} />
               <Route path="/donor_dashboard" element={<DonorDashboard />} />
               <Route path="/inventory" element={<InventoryManagement />} />
@@ -93,7 +98,10 @@ const App: React.FC = () => {
               />
               <Route path="/scheduling" element={<CareHomeMealSchedule />} />
               <Route path="/meal-scheduling" element={<DonorMealDonation />} />
-              <Route path="/select-carehome" element={<CareHomeSelectionPage />} />
+              <Route
+                path="/select-carehome"
+                element={<CareHomeSelectionPage />}
+              />
               <Route path="/donate/:needId" element={<DonationPage />} />
               <Route path="/donation-receipt/:donationId" element={<DonationReceiptPage />} />
               <Route path="/donations/received" element={<CareHomeDonationsPage />} />

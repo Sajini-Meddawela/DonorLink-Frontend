@@ -231,3 +231,20 @@ export const CareHomeService = {
     return response.data;
   },
 };
+
+export const UserService = {
+  getUserById: async (id: number): Promise<User> => {
+    const response = await api.get(`/v1/users/${id}`);
+    return response.data;
+  },
+
+  updateUser: async (id: number, userData: Partial<User>): Promise<User> => {
+    const response = await api.put(`/v1/users/${id}`, userData);
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await api.get('/v1/users/me');
+    return response.data;
+  }
+};

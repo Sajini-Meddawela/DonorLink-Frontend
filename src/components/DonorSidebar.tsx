@@ -29,6 +29,7 @@ interface DonorSidebarProps {
 
 const DonorSidebar: React.FC<DonorSidebarProps> = ({ activePage }) => {
   const donorMenuItems = [
+    { id: "donor-dashboard", text: "Dashboard", icon: <Home size={20} />, to: "/donor_dashboard" },
     { id: "select-carehome", text: "Select Carehome", icon: <Home size={20} />, to: "/select-carehome" },
     { id: "donation-made", text: "Donation Made", icon: <Gift size={20} />, to: "/donations/made" },
     { id: "urgent-needs", text: "Urgent Needs", icon: <AlertCircle size={20} />, to: "/urgent-needs" },
