@@ -166,14 +166,19 @@ export const DonationsService = {
     return response.data;
   },
 };
+
 export const MealDonationService = {
   async getSlots(
     careHomeId: number,
     startDate: Date,
     endDate: Date
   ): Promise<any> {
-    const response = await axios.get(MEAL_DONATION_BASE_URL, {
-      params: { careHomeId, startDate, endDate },
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}`, {
+      params: { 
+        careHomeId, 
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      },
     });
     return response.data;
   },
@@ -183,16 +188,16 @@ export const MealDonationService = {
     date: Date,
     mealTypes: string[]
   ): Promise<any> {
-    const response = await axios.post(MEAL_DONATION_BASE_URL, {
+    const response = await api.post(`${MEAL_DONATION_BASE_URL}`, {
       careHomeId,
-      date,
+      date: date.toISOString(),
       mealTypes,
     });
     return response.data;
   },
 
   async bookSlot(slotId: number, donorId: number): Promise<any> {
-    const response = await axios.post(
+    const response = await api.post(
       `${MEAL_DONATION_BASE_URL}/${slotId}/book`,
       { donorId }
     );
@@ -200,9 +205,14 @@ export const MealDonationService = {
   },
 
   async getDonorBookings(donorId: number): Promise<any> {
-    const response = await axios.get(`${MEAL_DONATION_BASE_URL}/donor`, {
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}/donor`, {
       params: { donorId },
     });
+    return response.data;
+  },
+
+    async updateMealDonationStatus(slotId: number, status: 'completed' | 'cancelled'): Promise<any> {
+    const response = await api.patch(`${MEAL_DONATION_BASE_URL}/${slotId}/status`, { status });
     return response.data;
   },
 };
