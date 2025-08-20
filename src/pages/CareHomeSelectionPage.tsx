@@ -5,16 +5,8 @@ import Navbar from "../components/NavBarAuth";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../components/Pagination";
 import { X, Search } from "lucide-react";
-
-interface CareHome {
-  id: number;
-  registrationNo: string | null;
-  name: string;
-  address: string | null;
-  phone: string;
-  email: string;
-  category: string | null;
-}
+import DonationTypeModal from "../components/DonationTypeModal";
+import { CareHome } from "../Types/types";
 
 const CareHomeSelectionPage: React.FC = () => {
   const [careHomes, setCareHomes] = useState<CareHome[]>([]);
@@ -28,6 +20,8 @@ const CareHomeSelectionPage: React.FC = () => {
     total: 0,
     totalPages: 1,
   });
+  const [selectedCareHome, setSelectedCareHome] = useState<CareHome | null>(null);
+  const [showDonationModal, setShowDonationModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,6 +60,29 @@ const CareHomeSelectionPage: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     setPagination((prev) => ({ ...prev, page: newPage }));
+  };
+
+  const handleCareHomeClick = (home: CareHome) => {
+    setSelectedCareHome(home);
+    setShowDonationModal(true);
+  };
+
+  const handleDonationTypeSelect = (type: "meal" | "drygood") => {
+    if (!selectedCareHome) return;
+
+    if (type === "meal") {
+      navigate("/meal-scheduling", { state: { careHome: selectedCareHome } });
+    } else {
+      navigate(`/carehome-needs/${selectedCareHome.id}`);
+    }
+    
+    setShowDonationModal(false);
+    setSelectedCareHome(null);
+  };
+
+  const handleModalClose = () => {
+    setShowDonationModal(false);
+    setSelectedCareHome(null);
   };
 
   return (
@@ -143,7 +160,7 @@ const CareHomeSelectionPage: React.FC = () => {
                     <div
                       key={home.id}
                       className="p-4 border border-gray-100 rounded-lg hover:border-[#63C6F7] hover:bg-[#63C6F7]/5 transition-all cursor-pointer"
-                      onClick={() => navigate(`/carehome-needs/${home.id}`)}
+                      onClick={() => handleCareHomeClick(home)}
                     >
                       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
                         <div className="flex-1">
@@ -189,6 +206,13 @@ const CareHomeSelectionPage: React.FC = () => {
               </>
             )}
           </div>
+
+          <DonationTypeModal
+            isOpen={showDonationModal}
+            onClose={handleModalClose}
+            careHome={selectedCareHome}
+            onSelectDonationType={handleDonationTypeSelect}
+          />
         </div>
       </div>
     </div>

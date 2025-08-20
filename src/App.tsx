@@ -30,6 +30,9 @@ import NeedListPage from "./pages/NeedListPage";
 import DeleteNeedPage from "./pages/DeleteNeedPage";
 import CareHomeMealSchedule from "./pages/CareHomeMealSchedule";
 import DonorMealDonation from "./pages/DonorMealDonation";
+import MealDonationPayment from "./pages/MealDonationPayment";
+import PaymentGateway from "./pages/PaymentGateway";
+import MealDonationReceiptPage from "./pages/MealDonationReceiptPage";
 import CareHomeSelectionPage from "./pages/CareHomeSelectionPage";
 import DonorNeedsPage from "./pages/DonorNeedsPage";
 import DonationPage from "./pages/DonationPage";
@@ -98,6 +101,9 @@ const App: React.FC = () => {
               />
               <Route path="/scheduling" element={<CareHomeMealSchedule />} />
               <Route path="/meal-scheduling" element={<DonorMealDonation />} />
+              <Route path="/meal-donation-payment" element={<MealDonationPayment />} />
+              <Route path="/payment-gateway" element={<PaymentGateway />} />
+              <Route path="/meal-donation-receipt/:donationId?" element={<MealDonationReceiptPage />} />
               <Route
                 path="/select-carehome"
                 element={<CareHomeSelectionPage />}
