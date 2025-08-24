@@ -2,13 +2,13 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  MealDonationSlot,
-  CalendarDay,
   NeedItem,
   CareHome,
   InventoryItem,
   Donation,
   User,
+  Chat,
+  Message,
 } from "../Types/types";
 
 const api = axios.create({
@@ -174,10 +174,10 @@ export const MealDonationService = {
     endDate: Date
   ): Promise<any> {
     const response = await api.get(`${MEAL_DONATION_BASE_URL}`, {
-      params: { 
-        careHomeId, 
+      params: {
+        careHomeId,
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        endDate: endDate.toISOString(),
       },
     });
     return response.data;
@@ -211,8 +211,14 @@ export const MealDonationService = {
     return response.data;
   },
 
-    async updateMealDonationStatus(slotId: number, status: 'completed' | 'cancelled'): Promise<any> {
-    const response = await api.patch(`${MEAL_DONATION_BASE_URL}/${slotId}/status`, { status });
+  async updateMealDonationStatus(
+    slotId: number,
+    status: "completed" | "cancelled"
+  ): Promise<any> {
+    const response = await api.patch(
+      `${MEAL_DONATION_BASE_URL}/${slotId}/status`,
+      { status }
+    );
     return response.data;
   },
 };
@@ -254,7 +260,33 @@ export const UserService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.get('/v1/users/me');
+    const response = await api.get("/v1/users/me");
     return response.data;
-  }
+  },
+};
+
+export const ChatService = {
+  getOrCreateChat: async (careHomeId: number): Promise<Chat> => {
+    const response = await api.post("/chats", { careHomeId });
+    return response.data;
+  },
+  getUserChats: async (): Promise<Chat[]> => {
+    try {
+      const response = await api.get("/chats");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      throw new Error("Failed to fetch chats");
+    }
+  },
+
+  getChatMessages: async (chatId: number): Promise<Message[]> => {
+    const response = await api.get(`/chats/${chatId}/messages`);
+    return response.data;
+  },
+
+  sendMessage: async (chatId: number, content: string): Promise<Message> => {
+    const response = await api.post("/chats/message", { chatId, content });
+    return response.data;
+  },
 };

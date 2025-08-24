@@ -4,11 +4,11 @@ export interface User {
   email: string;
   phone?: string;
   address?: string;
-  role: 'DONOR' | 'CAREHOME';
+  role: "DONOR" | "CAREHOME";
   isVerified: boolean;
-  registrationNo?: string;  
-  category?: string;        
-  profileImage?: string;    
+  registrationNo?: string;
+  category?: string;
+  profileImage?: string;
 }
 
 export interface InventoryItem {
@@ -36,7 +36,7 @@ export interface NeedItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  userId: number; 
+  userId: number;
 }
 
 export interface NeedTableItem {
@@ -46,7 +46,7 @@ export interface NeedTableItem {
   currentQuantity: number;
   category: string;
   urgencyLevel: "High" | "Medium" | "Low";
-  userId?: number; 
+  userId?: number;
 }
 
 export interface MealDonationSlot {
@@ -85,4 +85,37 @@ export interface Donation {
   needId: number;
   need?: NeedItem & { user?: User };
   donor?: User;
+}
+
+export interface Chat {
+  id: number;
+  donorId: number;
+  careHomeId: number;
+  createdAt: string;
+  updatedAt: string;
+  careHome?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  donor?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  messages?: Message[];
+}
+
+export interface Message {
+  id: number;
+  content: string;
+  senderId: number;
+  chatId: number;
+  createdAt: string;
+  read: boolean;
+  sender?: {
+    id: number;
+    name: string;
+    role: string;
+  };
 }
