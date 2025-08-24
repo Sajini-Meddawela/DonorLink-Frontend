@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Bell, User, MessageSquare } from 'lucide-react';
-import logo from '../Assets/donorlink_logo.png';
-import { Link } from 'react-router-dom';
-import ProfileEditTooltip from './ProfileEditTooltip';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Bell, User, MessageSquare } from "lucide-react";
+import logo from "../Assets/donorlink_logo.png";
+import ProfileEditTooltip from "./ProfileEditTooltip";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +12,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -22,24 +21,22 @@ const Navbar: React.FC = () => {
         <div className="mx-auto px-20">
           <div className="flex justify-between items-center h-20">
             <div className="flex-shrink-0">
-              <Link to={"/"}> 
-                <img
-                  className="h-14 w-auto"
-                  src={logo}
-                  alt="DonorLink Logo"
-                />
+              <Link to={"/"}>
+                <img className="h-14 w-auto" src={logo} alt="DonorLink Logo" />
               </Link>
             </div>
             <div className="flex items-center gap-6">
               <div className="flex gap-5">
-                <MessageSquare className="text-gray-600 w-6 h-6 cursor-pointer hover:text-gray-800 transition-colors" />
+                <Link to="/chat">
+                  <MessageSquare className="text-gray-600 w-6 h-6 cursor-pointer hover:text-gray-800 transition-colors" />
+                </Link>
                 <Bell className="text-gray-600 w-6 h-6 cursor-pointer hover:text-gray-800 transition-colors" />
                 <div className="relative">
-                  <User 
+                  <User
                     className={`w-6 h-6 cursor-pointer transition-colors ${
-                      showProfileTooltip 
-                        ? 'text-[#63C6F7]' 
-                        : 'text-gray-600 hover:text-gray-800'
+                      showProfileTooltip
+                        ? "text-[#63C6F7]"
+                        : "text-gray-600 hover:text-gray-800"
                     }`}
                     onClick={() => setShowProfileTooltip(!showProfileTooltip)}
                   />
@@ -60,7 +57,7 @@ const Navbar: React.FC = () => {
 
       {/* Profile Edit Tooltip */}
       {showProfileTooltip && (
-        <ProfileEditTooltip 
+        <ProfileEditTooltip
           currentUser={currentUser}
           onClose={() => setShowProfileTooltip(false)}
         />
