@@ -1,18 +1,27 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Bell, User, MessageSquare } from "lucide-react";
+import { Bell, User, MessageSquare, Home } from "lucide-react";
 import logo from "../Assets/donorlink_logo.png";
 import ProfileEditTooltip from "./ProfileEditTooltip";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user: currentUser, logout } = useAuth();
   const [showProfileTooltip, setShowProfileTooltip] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const dashboardPath = currentUser?.role === "CAREHOME" 
+    ? "/care_dashboard" 
+    : "/donor_dashboard";
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -27,14 +36,42 @@ const Navbar: React.FC = () => {
             </div>
             <div className="flex items-center gap-6">
               <div className="flex gap-5">
-                <Link to="/chat">
-                  <MessageSquare className="text-gray-600 w-6 h-6 cursor-pointer hover:text-gray-800 transition-colors" />
+                {/* Home Icon */}
+                <Link to={dashboardPath}>
+                  <Home 
+                    className={`w-6 h-6 cursor-pointer transition-colors ${
+                      isActive(dashboardPath) 
+                        ? "text-[#63C6F7]" 
+                        : "text-gray-600 hover:text-gray-800"
+                    }`}
+                  />
                 </Link>
-                <Bell className="text-gray-600 w-6 h-6 cursor-pointer hover:text-gray-800 transition-colors" />
+                
+                {/* Chat Icon */}
+                <Link to="/chat">
+                  <MessageSquare 
+                    className={`w-6 h-6 cursor-pointer transition-colors ${
+                      isActive("/chat") 
+                        ? "text-[#63C6F7]" 
+                        : "text-gray-600 hover:text-gray-800"
+                    }`} 
+                  />
+                </Link>
+                
+                {/* Notifications Icon */}
+                <Bell 
+                  className={`w-6 h-6 cursor-pointer transition-colors ${
+                    isActive("/notifications") 
+                      ? "text-[#63C6F7]" 
+                      : "text-gray-600 hover:text-gray-800"
+                  }`} 
+                />
+                
+                {/* Profile Icon */}
                 <div className="relative">
                   <User
                     className={`w-6 h-6 cursor-pointer transition-colors ${
-                      showProfileTooltip
+                      showProfileTooltip || isActive("/profile")
                         ? "text-[#63C6F7]"
                         : "text-gray-600 hover:text-gray-800"
                     }`}
