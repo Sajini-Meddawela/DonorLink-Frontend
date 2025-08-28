@@ -53,6 +53,22 @@ const DonorMealDonation: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const checkExpiredReservations = () => {
+      MealDonationService.getSlots(
+        selectedCareHome?.id || 0,
+        new Date(),
+        new Date(new Date().setMonth(new Date().getMonth() + 1))
+      ).then((slots) => {
+        processSlots(slots);
+      });
+    };
+
+    const interval = setInterval(checkExpiredReservations, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [selectedCareHome]);
+
   const fetchSlots = async () => {
     if (!selectedCareHome) return;
 
@@ -121,16 +137,22 @@ const DonorMealDonation: React.FC = () => {
     }
 
     try {
-      const bookedSlot = await MealDonationService.bookSlot(slot.id, user.id);
-      toast.success("Slot Selected");
+      const reservedSlot = await MealDonationService.reserveSlot(
+        slot.id,
+        user.id
+      );
+      toast.success(
+        "Slot Reserved for 15 minutes. Please complete your donation."
+      );
+
       navigate("/meal-donation-payment", {
         state: {
-          slot: bookedSlot,
+          slot: reservedSlot,
           careHome: selectedCareHome,
         },
       });
     } catch (error) {
-      console.error("Error booking slot:", error);
+      console.error("Error reserving slot:", error);
       toast.error("This slot is no longer available. Please try another one.");
       fetchSlots();
     }
@@ -223,10 +245,14 @@ const DonorMealDonation: React.FC = () => {
 
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                 <h3 className="font-semibold mb-2">Legend:</h3>
-                <div className="flex space-x-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
                     <span>Available</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
+                    <span>Reserved</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
@@ -235,6 +261,10 @@ const DonorMealDonation: React.FC = () => {
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
                     <span>Completed</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
+                    <span>Cancelled</span>
                   </div>
                 </div>
               </div>

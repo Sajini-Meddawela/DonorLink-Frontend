@@ -20,10 +20,14 @@ const MealCalendar: React.FC<MealCalendarProps> = ({
     switch (status) {
       case "Available":
         return "bg-green-100 border border-[#85C536] text-[#85C536]";
+      case "Reserved":
+        return "bg-yellow-100 border border-yellow-400 text-yellow-700";
       case "Booked":
         return "bg-gray-100 border border-gray-300 text-gray-400";
       case "Completed":
         return "bg-blue-100 border border-[#63C6F7] text-[#63C6F7]";
+      case "Cancelled":
+        return "bg-red-100 border border-red-300 text-red-600";
       default:
         return "bg-gray-100 border border-gray-300";
     }

@@ -79,22 +79,17 @@ const CareHomeMealSchedule: React.FC = () => {
     // Check if date is in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (date < today) {
       toast.error("Cannot create slots for past dates");
       return;
     }
-    
+
     setSelectedDate(date);
-    
-    // Fetch existing slots for this date
+
     if (user) {
       try {
-        const slots = await MealDonationService.getSlots(
-          user.id,
-          date,
-          date
-        );
+        const slots = await MealDonationService.getSlots(user.id, date, date);
         setExistingSlots(slots);
       } catch (error) {
         console.error("Error fetching existing slots:", error);
@@ -103,13 +98,15 @@ const CareHomeMealSchedule: React.FC = () => {
   };
 
   const handleMealToggle = (mealType: string) => {
-    // Check if slot already exists for this meal type
-    const alreadyExists = existingSlots.some(slot => slot.mealType === mealType);
-    
+    const alreadyExists = existingSlots.some(
+      (slot) => slot.mealType === mealType
+    );
+
     if (alreadyExists) {
       toast.error(`A ${mealType} slot already exists for this date`);
       return;
     }
+
     setSelectedMeals((prev) =>
       prev.includes(mealType)
         ? prev.filter((m) => m !== mealType)
@@ -134,11 +131,20 @@ const CareHomeMealSchedule: React.FC = () => {
       fetchSlots();
     } catch (error: any) {
       console.error("Error creating slots:", error);
-      
-      if (error.response?.data?.error === "Cannot create slots for past dates") {
+
+      if (
+        error.response?.data?.error === "Cannot create slots for past dates"
+      ) {
         toast.error("Cannot create slots for past dates");
-      } else if (error.response?.data?.error === "Slots already exist for some meal types") {
-        toast.error(`Some slots already exist: ${error.response.data.existingMealTypes.join(', ')}`);
+      } else if (
+        error.response?.data?.error ===
+        "Slots already exist for some meal types"
+      ) {
+        toast.error(
+          `Some slots already exist: ${error.response.data.existingMealTypes.join(
+            ", "
+          )}`
+        );
       } else {
         toast.error("Failed to create the slot");
       }
@@ -150,16 +156,17 @@ const CareHomeMealSchedule: React.FC = () => {
     try {
       await MealDonationService.deleteSlot(slotId);
       toast.success("Slot deleted successfully!");
-      
-      // Update existing slots list
-      setExistingSlots(existingSlots.filter(slot => slot.id !== slotId));
-      
-      // Refresh calendar
+
+      setExistingSlots(existingSlots.filter((slot) => slot.id !== slotId));
+
       fetchSlots();
     } catch (error: any) {
       console.error("Error deleting slot:", error);
-      
-      if (error.response?.data?.error === "Cannot delete a slot that is not available") {
+
+      if (
+        error.response?.data?.error ===
+        "Cannot delete a slot that is not available"
+      ) {
         toast.error("Cannot delete a slot that is already booked or completed");
       } else {
         toast.error("Failed to delete the slot");
@@ -234,21 +241,54 @@ const CareHomeMealSchedule: React.FC = () => {
             />
           </div>
 
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold mb-2">Legend:</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
+                <span>Available</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
+                <span>Reserved</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
+                <span>Booked</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
+                <span>Completed</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
+                <span>Cancelled</span>
+              </div>
+            </div>
+          </div>
+
           {selectedDate && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold mb-4">
                 Create Slots for {selectedDate.toLocaleDateString()}
               </h3>
-              
+
               {/* Existing slots section */}
               {existingSlots.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">Existing Slots:</h4>
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Existing Slots:
+                  </h4>
                   <div className="space-y-2">
-                    {existingSlots.map(slot => (
-                      <div key={slot.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <span className="capitalize">{slot.mealType}: {slot.status}</span>
-                        {slot.status === 'Available' && (
+                    {existingSlots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                      >
+                        <span className="capitalize">
+                          {slot.mealType}: {slot.status}
+                        </span>
+                        {slot.status === "Available" && (
                           <button
                             onClick={() => handleDeleteSlot(slot.id!)}
                             className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
@@ -261,10 +301,12 @@ const CareHomeMealSchedule: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
               <div className="flex space-x-4 mb-4">
                 {["Breakfast", "Lunch", "Dinner"].map((mealType) => {
-                  const alreadyExists = existingSlots.some(slot => slot.mealType === mealType);
+                  const alreadyExists = existingSlots.some(
+                    (slot) => slot.mealType === mealType
+                  );
                   return (
                     <label key={mealType} className="flex items-center">
                       <input
