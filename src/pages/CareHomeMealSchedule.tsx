@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { MealDonationService } from '../services/api';
-import MealCalendar from '../components/MealCalendar';
-import Navbar from '../components/NavBarAuth';
-import CareHomeSidebar from '../components/SideBar';
-import { CalendarDay } from '../Types/types';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { MealDonationService } from "../services/api";
+import MealCalendar from "../components/MealCalendar";
+import Navbar from "../components/NavBarAuth";
+import CareHomeSidebar from "../components/SideBar";
+import { CalendarDay } from "../Types/types";
+import { toast } from "react-toastify";
 
 const CareHomeMealSchedule: React.FC = () => {
   const { user } = useAuth();
@@ -21,32 +22,52 @@ const CareHomeMealSchedule: React.FC = () => {
   const fetchSlots = async () => {
     if (!user) return;
 
-    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    const startDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      1
+    );
+    const endDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    );
 
     try {
-      const slots = await MealDonationService.getSlots(user.id, startDate, endDate);
+      const slots = await MealDonationService.getSlots(
+        user.id,
+        startDate,
+        endDate
+      );
       processSlots(slots);
     } catch (error) {
-      console.error('Error fetching slots:', error);
+      console.error("Error fetching slots:", error);
     }
   };
 
   const processSlots = (slots: any[]) => {
-    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+    const daysInMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    ).getDate();
     const processedDays: CalendarDay[] = [];
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
-      const daySlots = slots.filter((slot: any) => 
-        new Date(slot.date).getDate() === i
+      const date = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        i
+      );
+      const daySlots = slots.filter(
+        (slot: any) => new Date(slot.date).getDate() === i
       );
 
       processedDays.push({
         date,
-        breakfast: daySlots.find((slot: any) => slot.mealType === 'Breakfast'),
-        lunch: daySlots.find((slot: any) => slot.mealType === 'Lunch'),
-        dinner: daySlots.find((slot: any) => slot.mealType === 'Dinner')
+        breakfast: daySlots.find((slot: any) => slot.mealType === "Breakfast"),
+        lunch: daySlots.find((slot: any) => slot.mealType === "Lunch"),
+        dinner: daySlots.find((slot: any) => slot.mealType === "Dinner"),
       });
     }
 
@@ -58,9 +79,9 @@ const CareHomeMealSchedule: React.FC = () => {
   };
 
   const handleMealToggle = (mealType: string) => {
-    setSelectedMeals(prev => 
-      prev.includes(mealType) 
-        ? prev.filter(m => m !== mealType)
+    setSelectedMeals((prev) =>
+      prev.includes(mealType)
+        ? prev.filter((m) => m !== mealType)
         : [...prev, mealType]
     );
   };
@@ -70,12 +91,18 @@ const CareHomeMealSchedule: React.FC = () => {
 
     setLoading(true);
     try {
-      await MealDonationService.createSlots(user.id, selectedDate, selectedMeals);
+      await MealDonationService.createSlots(
+        user.id,
+        selectedDate,
+        selectedMeals
+      );
+      toast.success("Made Available slots successfully!");
       setSelectedDate(null);
       setSelectedMeals([]);
       fetchSlots();
     } catch (error) {
-      console.error('Error creating slots:', error);
+      console.error("Error creating slots:", error);
+      toast.error("Failed to create the slot");
     }
     setLoading(false);
   };
@@ -87,18 +114,32 @@ const CareHomeMealSchedule: React.FC = () => {
         <CareHomeSidebar activePage="meal-scheduling" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-[#63C6F7]">Meal Scheduling</h1>
-            <p className="text-gray-600">Manage available meal donation slots for donors</p>
+            <h1 className="text-3xl font-bold text-[#63C6F7]">
+              Meal Scheduling
+            </h1>
+            <p className="text-gray-600">
+              Manage available meal donation slots for donors
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
-                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                {currentMonth.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
               </h2>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(
+                        currentMonth.getFullYear(),
+                        currentMonth.getMonth() - 1
+                      )
+                    )
+                  }
                   className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
                 >
                   Previous
@@ -110,7 +151,14 @@ const CareHomeMealSchedule: React.FC = () => {
                   Today
                 </button>
                 <button
-                  onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                  onClick={() =>
+                    setCurrentMonth(
+                      new Date(
+                        currentMonth.getFullYear(),
+                        currentMonth.getMonth() + 1
+                      )
+                    )
+                  }
                   className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
                 >
                   Next
@@ -132,7 +180,7 @@ const CareHomeMealSchedule: React.FC = () => {
                 Create Slots for {selectedDate.toLocaleDateString()}
               </h3>
               <div className="flex space-x-4 mb-4">
-                {['Breakfast', 'Lunch', 'Dinner'].map(mealType => (
+                {["Breakfast", "Lunch", "Dinner"].map((mealType) => (
                   <label key={mealType} className="flex items-center">
                     <input
                       type="checkbox"
@@ -150,7 +198,7 @@ const CareHomeMealSchedule: React.FC = () => {
                   disabled={loading || selectedMeals.length === 0}
                   className="px-6 py-2 bg-[#63C6F7] text-white rounded-lg hover:bg-[#52b0e0] disabled:opacity-50"
                 >
-                  {loading ? 'Creating...' : 'Create Slots'}
+                  {loading ? "Creating..." : "Create Slots"}
                 </button>
                 <button
                   onClick={() => {

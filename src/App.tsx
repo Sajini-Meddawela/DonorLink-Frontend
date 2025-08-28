@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 import Home from "./pages/Home";
@@ -38,7 +40,6 @@ import CareHomeSelectionPage from "./pages/CareHomeSelectionPage";
 import DonorNeedsPage from "./pages/DonorNeedsPage";
 import DonationPage from "./pages/DonationPage";
 import ResetPassword from "./pages/ResetPassword";
-import ProfilePage from "./pages/EditProfile";
 import DonationReceiptPage from "./pages/DonationReceiptPage";
 import CareHomeDonationsPage from "./pages/DonationReceived";
 import DonationMadePage from "./pages/DonationMade";
@@ -90,7 +91,6 @@ const App: React.FC = () => {
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/care_dashboard" element={<CareDashboard />} />
                 <Route path="/donor_dashboard" element={<DonorDashboard />} />
                 <Route path="/inventory" element={<InventoryManagement />} />
@@ -136,6 +136,17 @@ const App: React.FC = () => {
                 <Route path="/chat" element={<ChatPage />} />
               </Route>
             </Routes>
+            <ToastContainer
+              position="bottom-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </ChatProvider>
         </AuthProvider>
       </BrowserRouter>

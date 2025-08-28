@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/SideBar';
-import Navbar from '../components/NavBarAuth';
-import { NeedsService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Sidebar from "../components/SideBar";
+import Navbar from "../components/NavBarAuth";
+import { NeedsService } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 const DeleteNeedPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,14 +15,18 @@ const DeleteNeedPage: React.FC = () => {
     const deleteNeed = async () => {
       try {
         if (!id || !user) {
-          throw new Error('No ID provided or user not authenticated');
+          toast.error("No ID provided or user not authenticated");
+          navigate("/needs");
+          return;
         }
-        
+
         await NeedsService.deleteNeed(parseInt(id), user.id);
-        navigate('/needs', { state: { message: 'Need deleted successfully' } });
+        toast.success("Need deleted successfully!");
+        navigate("/needs");
       } catch (error) {
-        console.error('Error deleting need:', error);
-        navigate('/needs', { state: { error: 'Failed to delete need' } });
+        console.error("Error deleting need:", error);
+        toast.error("Failed to delete need");
+        navigate("/needs");
       }
     };
 

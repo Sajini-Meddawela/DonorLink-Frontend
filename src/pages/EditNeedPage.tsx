@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/SideBar';
-import Navbar from '../components/NavBarAuth';
-import NeedForm from '../components/NeedForm';
-import { NeedsService } from '../services/api';
-import { NeedItem } from '../Types/types';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useParams, useNavigate } from "react-router-dom";
+import Sidebar from "../components/SideBar";
+import Navbar from "../components/NavBarAuth";
+import NeedForm from "../components/NeedForm";
+import { NeedsService } from "../services/api";
+import { NeedItem } from "../Types/types";
+import { useAuth } from "../context/AuthContext";
 
 const EditNeedPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,14 +19,15 @@ const EditNeedPage: React.FC = () => {
   useEffect(() => {
     const fetchNeed = async () => {
       try {
-        if (!id || !user) throw new Error('No ID provided or user not authenticated');
-        
+        if (!id || !user)
+          throw new Error("No ID provided or user not authenticated");
+
         const need = await NeedsService.getNeedById(parseInt(id), user.id);
-        if (!need) throw new Error('Need not found');
-        
+        if (!need) throw new Error("Need not found");
+
         setNeedDetails(need);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch need');
+        setError(err instanceof Error ? err.message : "Failed to fetch need");
       } finally {
         setLoading(false);
       }
@@ -34,28 +36,34 @@ const EditNeedPage: React.FC = () => {
     fetchNeed();
   }, [id, user]);
 
-  const handleSubmit = async (formData: Omit<NeedItem, 'id'>) => {
+  const handleSubmit = async (formData: Omit<NeedItem, "id">) => {
     try {
       if (!id || !user) return;
-      await NeedsService.updateNeed(parseInt(id), {
-        ...formData,
-        id: parseInt(id) 
-      }, user.id);
-      navigate('/needs');
+      await NeedsService.updateNeed(
+        parseInt(id),
+        {
+          ...formData,
+          id: parseInt(id),
+        },
+        user.id
+      );
+      toast.success("Need Item updated successfully!");
+      navigate("/needs");
     } catch (error) {
-      console.error('Failed to update need:', error);
-      alert('Failed to update need. Please try again.');
+      console.error("Failed to update need:", error);
+      toast.error("Failed to update need Item. Please try again.");
     }
   };
 
-
   const handleCancel = () => {
-    navigate('/needs');
+    navigate("/needs");
   };
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
-  if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
-  if (!needDetails) return <div className="text-center p-8">Need not found</div>;
+  if (error)
+    return <div className="text-center p-8 text-red-500">Error: {error}</div>;
+  if (!needDetails)
+    return <div className="text-center p-8">Need not found</div>;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -63,9 +71,9 @@ const EditNeedPage: React.FC = () => {
       <div className="flex flex-1 overflow-hidden pt-20">
         <Sidebar activePage="need-list" />
         <div className="flex flex-col flex-1 overflow-hidden p-10 items-center justify-center ml-[200px]">
-          <NeedForm 
-            onSubmit={handleSubmit} 
-            onCancel={handleCancel} 
+          <NeedForm
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
             initialData={needDetails}
             isEditMode={true}
           />
