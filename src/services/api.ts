@@ -223,33 +223,44 @@ export const MealDonationService = {
   },
 
   async deleteSlot(slotId: number): Promise<void> {
-    const response = await api.delete(
-      `${MEAL_DONATION_BASE_URL}/${slotId}`
-    );
+    const response = await api.delete(`${MEAL_DONATION_BASE_URL}/${slotId}`);
     return response.data;
   },
 
   async getSlotsByDateAndMealTypes(
-    careHomeId: number, 
-    date: Date, 
+    careHomeId: number,
+    date: Date,
     mealTypes: string[]
   ): Promise<any> {
     const response = await api.get(`${MEAL_DONATION_BASE_URL}/by-date-types`, {
       params: {
         careHomeId,
         date: date.toISOString(),
-        mealTypes: mealTypes.join(',')
-      }
+        mealTypes: mealTypes.join(","),
+      },
     });
     return response.data;
   },
 
-  async getSlotById(slotId: number): Promise<any> {
-    const response = await api.get(
-      `${MEAL_DONATION_BASE_URL}/${slotId}`
+  async reserveSlot(slotId: number, donorId: number): Promise<any> {
+    const response = await api.post(
+      `${MEAL_DONATION_BASE_URL}/${slotId}/reserve`,
+      { donorId }
     );
     return response.data;
-  }
+  },
+
+  async confirmSlot(slotId: number): Promise<any> {
+    const response = await api.post(
+      `${MEAL_DONATION_BASE_URL}/${slotId}/confirm`
+    );
+    return response.data;
+  },
+
+  async getSlotById(slotId: number): Promise<any> {
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}/${slotId}`);
+    return response.data;
+  },
 };
 
 export const CareHomeService = {
