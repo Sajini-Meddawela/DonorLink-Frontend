@@ -4,7 +4,8 @@ import Sidebar from "../components/SideBar";
 import Navbar from "../components/NavBarAuth";
 import InventoryForm from "../components/Form";
 import { InventoryService } from "../services/api";
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 const EditInventoryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,8 @@ const EditInventoryPage: React.FC = () => {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        if (!id || !user) throw new Error("No ID provided or user not authenticated");
+        if (!id || !user)
+          throw new Error("No ID provided or user not authenticated");
 
         const item = await InventoryService.getItemById(parseInt(id), user.id);
         if (!item) throw new Error("Item not found");
@@ -37,10 +39,11 @@ const EditInventoryPage: React.FC = () => {
     try {
       if (!id || !user) return;
       await InventoryService.updateItem(parseInt(id), user.id, formData);
+      toast.success("Inventory item updated successfully!");
       navigate("/inventory");
     } catch (error) {
       console.error("Failed to update inventory item:", error);
-      alert("Failed to update inventory item. Please try again.");
+      toast.error("Failed to update inventory item. Please try again.");
     }
   };
 
@@ -49,12 +52,16 @@ const EditInventoryPage: React.FC = () => {
   };
 
   if (!user) {
-    return <div className="text-center p-8">Please login to access this page</div>;
+    return (
+      <div className="text-center p-8">Please login to access this page</div>
+    );
   }
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
-  if (error) return <div className="text-center p-8 text-red-500">Error: {error}</div>;
-  if (!itemDetails) return <div className="text-center p-8">Item not found</div>;
+  if (error)
+    return <div className="text-center p-8 text-red-500">Error: {error}</div>;
+  if (!itemDetails)
+    return <div className="text-center p-8">Item not found</div>;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">

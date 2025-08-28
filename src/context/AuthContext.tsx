@@ -1,6 +1,13 @@
-import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { connectSocket, disconnectSocket } from "../services/socket";
 
 interface User {
   id: number;
@@ -8,7 +15,7 @@ interface User {
   email: string;
   phone?: string;
   address?: string;
-  role: 'DONOR' | 'CAREHOME';
+  role: "DONOR" | "CAREHOME";
   isVerified: boolean;
 }
 
@@ -23,36 +30,47 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token")
+  );
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
 
       if (storedToken) {
         try {
-          // Set axios default headers first
-          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          
-          // Verify token with backend
-          const response = await axios.get('http://localhost:4000/api/v1/auth/me');
-          
-          // Only update state if verification succeeds
-          setUser(response.data.user || (storedUser ? JSON.parse(storedUser) : null));
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${storedToken}`;
+
+          const response = await axios.get(
+            "http://localhost:4000/api/v1/auth/me"
+          );
+
+          const userData =
+            response.data.user || (storedUser ? JSON.parse(storedUser) : null);
+          setUser(userData);
           setToken(storedToken);
+
+          // Connect socket after successful authentication
+          connectSocket(storedToken);
         } catch (error) {
-          console.error('Token validation failed:', error);
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          console.error("Token validation failed:", error);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setUser(null);
           setToken(null);
-          delete axios.defaults.headers.common['Authorization'];
+          delete axios.defaults.headers.common["Authorization"];
+
+          disconnectSocket();
         }
       }
       setLoading(false);
@@ -64,32 +82,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:4000/api/v1/auth/login', {
-        email,
-        password
-      });
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
       const { token, user } = response.data;
-      
-      // Store in localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Set axios headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
-      // Update state
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       setUser(user);
       setToken(token);
-      
-      // Redirect based on role
-      if (user.role === 'CAREHOME') {
-        navigate('/care_dashboard');
+
+      connectSocket(token);
+
+      if (user.role === "CAREHOME") {
+        navigate("/care_dashboard");
       } else {
-        navigate('/donor_dashboard');
+        navigate("/donor_dashboard");
       }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
+      disconnectSocket();
       throw error;
     } finally {
       setLoading(false);
@@ -97,12 +117,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Disconnect socket first
+    disconnectSocket();
+
+    // Clear local storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    // Clear state
     setUser(null);
     setToken(null);
-    delete axios.defaults.headers.common['Authorization'];
-    navigate('/login');
+
+    // Remove axios headers
+    delete axios.defaults.headers.common["Authorization"];
+
+    // Navigate to login
+    navigate("/login");
   };
 
   const value = {
@@ -111,20 +141,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login,
     logout,
     loading,
-    isAuthenticated: !!token
+    isAuthenticated: !!token,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

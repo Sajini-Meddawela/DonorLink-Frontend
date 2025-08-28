@@ -7,6 +7,8 @@ import {
   InventoryItem,
   Donation,
   User,
+  Chat,
+  Message,
 } from "../Types/types";
 
 const api = axios.create({
@@ -288,6 +290,32 @@ export const UserService = {
 
   getCurrentUser: async (): Promise<User> => {
     const response = await api.get("/v1/users/me");
+    return response.data;
+  },
+};
+
+export const ChatService = {
+  getOrCreateChat: async (careHomeId: number): Promise<Chat> => {
+    const response = await api.post("/chats", { careHomeId });
+    return response.data;
+  },
+  getUserChats: async (): Promise<Chat[]> => {
+    try {
+      const response = await api.get("/chats");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      throw new Error("Failed to fetch chats");
+    }
+  },
+
+  getChatMessages: async (chatId: number): Promise<Message[]> => {
+    const response = await api.get(`/chats/${chatId}/messages`);
+    return response.data;
+  },
+
+  sendMessage: async (chatId: number, content: string): Promise<Message> => {
+    const response = await api.post("/chats/message", { chatId, content });
     return response.data;
   },
 };

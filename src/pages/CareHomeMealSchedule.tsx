@@ -110,7 +110,6 @@ const CareHomeMealSchedule: React.FC = () => {
       toast.error(`A ${mealType} slot already exists for this date`);
       return;
     }
-    
     setSelectedMeals((prev) =>
       prev.includes(mealType)
         ? prev.filter((m) => m !== mealType)

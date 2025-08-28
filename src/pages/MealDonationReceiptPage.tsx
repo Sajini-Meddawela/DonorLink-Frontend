@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { MealDonationService, CareHomeService } from "../services/api";
 import { MealDonationSlot, CareHome, User } from "../Types/types";
@@ -10,14 +11,14 @@ import html2canvas from "html2canvas";
 
 interface MealDonation {
   id?: number;
-  type: 'meal';
+  type: "meal";
   slot: MealDonationSlot;
   careHome: CareHome;
   paymentMethod: string;
-  paymentStatus: 'pending' | 'completed' | 'failed';
+  paymentStatus: "pending" | "completed" | "failed";
   date: Date;
   donor?: User;
-  status: 'booked' | 'completed' | 'cancelled';
+  status: "booked" | "completed" | "cancelled";
 }
 
 const MealDonationReceiptPage: React.FC = () => {
@@ -43,7 +44,9 @@ const MealDonationReceiptPage: React.FC = () => {
           throw new Error("No donation data provided");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch donation data");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch donation data"
+        );
       } finally {
         setLoading(false);
       }
@@ -54,18 +57,27 @@ const MealDonationReceiptPage: React.FC = () => {
 
   const handleDownloadPDF = () => {
     const receiptElement = document.getElementById("receipt");
-    if (!receiptElement) return;
+    if (!receiptElement) {
+      toast.error("Receipt element not found");
+      return;
+    }
 
-    html2canvas(receiptElement).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    html2canvas(receiptElement)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`meal-donation-receipt-${donationId || 'new'}.pdf`);
-    });
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`meal-donation-receipt-${donationId || "new"}.pdf`);
+        toast.success("Receipt downloaded successfully!");
+      })
+      .catch((error) => {
+        console.error("Error generating PDF:", error);
+        toast.error("Failed to download receipt");
+      });
   };
 
   const handleBackToDashboard = () => {
@@ -90,19 +102,27 @@ const MealDonationReceiptPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600';
-      case 'cancelled': return 'text-red-600';
-      case 'booked': return 'text-yellow-600';
-      default: return 'text-gray-600';
+      case "completed":
+        return "text-green-600";
+      case "cancelled":
+        return "text-red-600";
+      case "booked":
+        return "text-yellow-600";
+      default:
+        return "text-gray-600";
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600';
-      case 'failed': return 'text-red-600';
-      case 'pending': return 'text-yellow-600';
-      default: return 'text-gray-600';
+      case "completed":
+        return "text-green-600";
+      case "failed":
+        return "text-red-600";
+      case "pending":
+        return "text-yellow-600";
+      default:
+        return "text-gray-600";
     }
   };
 
@@ -141,9 +161,11 @@ const MealDonationReceiptPage: React.FC = () => {
               </div>
               <div className="text-right">
                 <h3 className="text-xl font-semibold">
-                  Receipt #{donation.id || 'NEW'}
+                  Receipt #{donation.id || "NEW"}
                 </h3>
-                <p className="text-gray-600">Thank you for your meal donation!</p>
+                <p className="text-gray-600">
+                  Thank you for your meal donation!
+                </p>
               </div>
             </div>
 
@@ -172,9 +194,11 @@ const MealDonationReceiptPage: React.FC = () => {
                   </p>
                   <p>
                     <span className="font-medium">Time:</span>{" "}
-                    {donation.slot.mealType === 'Breakfast' ? '7:00 AM - 9:00 AM' :
-                     donation.slot.mealType === 'Lunch' ? '12:00 PM - 2:00 PM' :
-                     '6:00 PM - 8:00 PM'}
+                    {donation.slot.mealType === "Breakfast"
+                      ? "7:00 AM - 9:00 AM"
+                      : donation.slot.mealType === "Lunch"
+                      ? "12:00 PM - 2:00 PM"
+                      : "6:00 PM - 8:00 PM"}
                   </p>
                   <p>
                     <span className="font-medium">Payment Method:</span>{" "}
@@ -182,14 +206,24 @@ const MealDonationReceiptPage: React.FC = () => {
                   </p>
                   <p>
                     <span className="font-medium">Payment Status:</span>{" "}
-                    <span className={`${getPaymentStatusColor(donation.paymentStatus)} font-medium`}>
-                      {donation.paymentStatus.charAt(0).toUpperCase() + donation.paymentStatus.slice(1)}
+                    <span
+                      className={`${getPaymentStatusColor(
+                        donation.paymentStatus
+                      )} font-medium`}
+                    >
+                      {donation.paymentStatus.charAt(0).toUpperCase() +
+                        donation.paymentStatus.slice(1)}
                     </span>
                   </p>
                   <p>
                     <span className="font-medium">Donation Status:</span>{" "}
-                    <span className={`${getStatusColor(donation.status)} font-medium`}>
-                      {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
+                    <span
+                      className={`${getStatusColor(
+                        donation.status
+                      )} font-medium`}
+                    >
+                      {donation.status.charAt(0).toUpperCase() +
+                        donation.status.slice(1)}
                     </span>
                   </p>
                 </div>
@@ -200,23 +234,28 @@ const MealDonationReceiptPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Thank You Note</h3>
               {donation.status === "booked" && (
                 <p className="text-gray-700 mb-6">
-                  Your meal donation for {donation.slot.mealType} on {new Date(donation.slot.date).toLocaleDateString()} 
-                  has been successfully booked. The care home will confirm receipt once your donation is received. 
-                  Please ensure to deliver the meal ingredients or make the payment as per your selected method.
+                  Your meal donation for {donation.slot.mealType} on{" "}
+                  {new Date(donation.slot.date).toLocaleDateString()}
+                  has been successfully booked. The care home will confirm
+                  receipt once your donation is received. Please ensure to
+                  deliver the meal ingredients or make the payment as per your
+                  selected method.
                 </p>
               )}
               {donation.status === "completed" && (
                 <p className="text-gray-700 mb-6">
-                  Your generous meal donation for {donation.slot.mealType} has been received and will help provide 
-                  nutritious meals to those in need. We truly appreciate your contribution to our community and 
-                  your support for {careHome?.name}.
+                  Your generous meal donation for {donation.slot.mealType} has
+                  been received and will help provide nutritious meals to those
+                  in need. We truly appreciate your contribution to our
+                  community and your support for {careHome?.name}.
                 </p>
               )}
               {donation.status === "cancelled" && (
                 <p className="text-gray-700 mb-6">
-                  We regret to inform you that your meal donation for {donation.slot.mealType} could not be 
-                  accepted at this time. Please contact {careHome?.name} for more information or to reschedule 
-                  your donation.
+                  We regret to inform you that your meal donation for{" "}
+                  {donation.slot.mealType} could not be accepted at this time.
+                  Please contact {careHome?.name} for more information or to
+                  reschedule your donation.
                 </p>
               )}
               <div className="flex items-center justify-between">

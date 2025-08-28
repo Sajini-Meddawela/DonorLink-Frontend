@@ -2,9 +2,9 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import carehomelogin from '../Assets/login.svg';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
+import { Eye, EyeOff } from 'lucide-react'; 
 
 interface LoginFormData {
   email: string;
@@ -17,6 +17,7 @@ const CareHomeLoginPage: React.FC = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -47,7 +48,7 @@ const CareHomeLoginPage: React.FC = () => {
     }
   };
 
-  return (
+   return (
     <div className="flex h-screen">
       <div className="w-[40%] bg-[#87CEEB] flex items-center justify-center">
         <img
@@ -78,20 +79,29 @@ const CareHomeLoginPage: React.FC = () => {
                 required
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <label htmlFor="password" className="block font-bold text-[#63C6F7] mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#87CEEB]"
-                placeholder="Password"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#87CEEB] pr-10"
+                  placeholder="Password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
             <div className="flex justify-between items-center mb-6">
               <Link to="/forgotpw" className="text-sm text-[#85C536] hover:underline">
