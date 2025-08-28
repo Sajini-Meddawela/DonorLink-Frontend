@@ -111,6 +111,15 @@ const DonorMealDonation: React.FC = () => {
   const handleSlotClick = async (slot: any) => {
     if (!user) return;
 
+    const slotDate = new Date(slot.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (slotDate < today) {
+      toast.error("Cannot book slots for past dates");
+      return;
+    }
+
     try {
       const bookedSlot = await MealDonationService.bookSlot(slot.id, user.id);
       toast.success("Slot Selected");

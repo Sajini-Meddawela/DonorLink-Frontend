@@ -221,6 +221,35 @@ export const MealDonationService = {
     );
     return response.data;
   },
+
+  async deleteSlot(slotId: number): Promise<void> {
+    const response = await api.delete(
+      `${MEAL_DONATION_BASE_URL}/${slotId}`
+    );
+    return response.data;
+  },
+
+  async getSlotsByDateAndMealTypes(
+    careHomeId: number, 
+    date: Date, 
+    mealTypes: string[]
+  ): Promise<any> {
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}/by-date-types`, {
+      params: {
+        careHomeId,
+        date: date.toISOString(),
+        mealTypes: mealTypes.join(',')
+      }
+    });
+    return response.data;
+  },
+
+  async getSlotById(slotId: number): Promise<any> {
+    const response = await api.get(
+      `${MEAL_DONATION_BASE_URL}/${slotId}`
+    );
+    return response.data;
+  }
 };
 
 export const CareHomeService = {
