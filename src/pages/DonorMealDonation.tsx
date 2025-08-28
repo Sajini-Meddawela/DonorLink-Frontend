@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { MealDonationService, CareHomeService } from '../services/api';
-import MealCalendar from '../components/MealCalendar';
-import Navbar from '../components/NavBarAuth';
-import DonorSidebar from '../components/DonorSidebar';
-import { CareHome, CalendarDay } from '../Types/types';
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { MealDonationService, CareHomeService } from "../services/api";
+import MealCalendar from "../components/MealCalendar";
+import Navbar from "../components/NavBarAuth";
+import DonorSidebar from "../components/DonorSidebar";
+import { CareHome, CalendarDay } from "../Types/types";
 
 const DonorMealDonation: React.FC = () => {
   const { user } = useAuth();
@@ -36,14 +37,18 @@ const DonorMealDonation: React.FC = () => {
         setCareHomes(response);
       } else if (response && Array.isArray(response.data)) {
         setCareHomes(response.data);
-      } else if (response && response.data && Array.isArray(response.data.data)) {
+      } else if (
+        response &&
+        response.data &&
+        Array.isArray(response.data.data)
+      ) {
         setCareHomes(response.data.data);
       } else {
-        console.error('Unexpected response format:', response);
+        console.error("Unexpected response format:", response);
         setCareHomes([]);
       }
     } catch (error) {
-      console.error('Error fetching care homes:', error);
+      console.error("Error fetching care homes:", error);
       setCareHomes([]);
     }
   };
@@ -51,32 +56,52 @@ const DonorMealDonation: React.FC = () => {
   const fetchSlots = async () => {
     if (!selectedCareHome) return;
 
-    const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    const startDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      1
+    );
+    const endDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    );
 
     try {
-      const slots = await MealDonationService.getSlots(selectedCareHome.id, startDate, endDate);
+      const slots = await MealDonationService.getSlots(
+        selectedCareHome.id,
+        startDate,
+        endDate
+      );
       processSlots(slots);
     } catch (error) {
-      console.error('Error fetching slots:', error);
+      console.error("Error fetching slots:", error);
     }
   };
 
   const processSlots = (slots: any[]) => {
-    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+    const daysInMonth = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth() + 1,
+      0
+    ).getDate();
     const processedDays: CalendarDay[] = [];
 
     for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i);
-      const daySlots = slots.filter((slot: any) => 
-        new Date(slot.date).getDate() === i
+      const date = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        i
+      );
+      const daySlots = slots.filter(
+        (slot: any) => new Date(slot.date).getDate() === i
       );
 
       processedDays.push({
         date,
-        breakfast: daySlots.find((slot: any) => slot.mealType === 'Breakfast'),
-        lunch: daySlots.find((slot: any) => slot.mealType === 'Lunch'),
-        dinner: daySlots.find((slot: any) => slot.mealType === 'Dinner')
+        breakfast: daySlots.find((slot: any) => slot.mealType === "Breakfast"),
+        lunch: daySlots.find((slot: any) => slot.mealType === "Lunch"),
+        dinner: daySlots.find((slot: any) => slot.mealType === "Dinner"),
       });
     }
 
@@ -86,17 +111,27 @@ const DonorMealDonation: React.FC = () => {
   const handleSlotClick = async (slot: any) => {
     if (!user) return;
 
+    const slotDate = new Date(slot.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (slotDate < today) {
+      toast.error("Cannot book slots for past dates");
+      return;
+    }
+
     try {
       const bookedSlot = await MealDonationService.bookSlot(slot.id, user.id);
-      navigate('/meal-donation-payment', { 
-        state: { 
+      toast.success("Slot Selected");
+      navigate("/meal-donation-payment", {
+        state: {
           slot: bookedSlot,
-          careHome: selectedCareHome 
-        } 
+          careHome: selectedCareHome,
+        },
       });
     } catch (error) {
-      console.error('Error booking slot:', error);
-      alert('This slot is no longer available. Please try another one.');
+      console.error("Error booking slot:", error);
+      toast.error("This slot is no longer available. Please try another one.");
       fetchSlots();
     }
   };
@@ -111,22 +146,26 @@ const DonorMealDonation: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-[#63C6F7]">Meal Donation</h1>
-            <p className="text-gray-600">Book available meal slots to support care homes</p>
+            <p className="text-gray-600">
+              Book available meal slots to support care homes
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Select Care Home</h2>
             <select
-              value={selectedCareHome?.id || ''}
+              value={selectedCareHome?.id || ""}
               onChange={(e) => {
                 const selectedId = parseInt(e.target.value);
-                const home = careHomeOptions.find(home => home.id === selectedId);
+                const home = careHomeOptions.find(
+                  (home) => home.id === selectedId
+                );
                 setSelectedCareHome(home || null);
               }}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
             >
               <option value="">Select a care home</option>
-              {careHomeOptions.map(home => (
+              {careHomeOptions.map((home) => (
                 <option key={home.id} value={home.id}>
                   {home.name} - {home.address}
                 </option>
@@ -142,7 +181,14 @@ const DonorMealDonation: React.FC = () => {
                 </h2>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                    onClick={() =>
+                      setCurrentMonth(
+                        new Date(
+                          currentMonth.getFullYear(),
+                          currentMonth.getMonth() - 1
+                        )
+                      )
+                    }
                     className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
                   >
                     Previous
@@ -154,7 +200,14 @@ const DonorMealDonation: React.FC = () => {
                     Today
                   </button>
                   <button
-                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                    onClick={() =>
+                      setCurrentMonth(
+                        new Date(
+                          currentMonth.getFullYear(),
+                          currentMonth.getMonth() + 1
+                        )
+                      )
+                    }
                     className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
                   >
                     Next

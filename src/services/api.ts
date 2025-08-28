@@ -2,8 +2,6 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 import {
-  MealDonationSlot,
-  CalendarDay,
   NeedItem,
   CareHome,
   InventoryItem,
@@ -174,10 +172,10 @@ export const MealDonationService = {
     endDate: Date
   ): Promise<any> {
     const response = await api.get(`${MEAL_DONATION_BASE_URL}`, {
-      params: { 
-        careHomeId, 
+      params: {
+        careHomeId,
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        endDate: endDate.toISOString(),
       },
     });
     return response.data;
@@ -211,10 +209,45 @@ export const MealDonationService = {
     return response.data;
   },
 
-    async updateMealDonationStatus(slotId: number, status: 'completed' | 'cancelled'): Promise<any> {
-    const response = await api.patch(`${MEAL_DONATION_BASE_URL}/${slotId}/status`, { status });
+  async updateMealDonationStatus(
+    slotId: number,
+    status: "completed" | "cancelled"
+  ): Promise<any> {
+    const response = await api.patch(
+      `${MEAL_DONATION_BASE_URL}/${slotId}/status`,
+      { status }
+    );
     return response.data;
   },
+
+  async deleteSlot(slotId: number): Promise<void> {
+    const response = await api.delete(
+      `${MEAL_DONATION_BASE_URL}/${slotId}`
+    );
+    return response.data;
+  },
+
+  async getSlotsByDateAndMealTypes(
+    careHomeId: number, 
+    date: Date, 
+    mealTypes: string[]
+  ): Promise<any> {
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}/by-date-types`, {
+      params: {
+        careHomeId,
+        date: date.toISOString(),
+        mealTypes: mealTypes.join(',')
+      }
+    });
+    return response.data;
+  },
+
+  async getSlotById(slotId: number): Promise<any> {
+    const response = await api.get(
+      `${MEAL_DONATION_BASE_URL}/${slotId}`
+    );
+    return response.data;
+  }
 };
 
 export const CareHomeService = {
@@ -254,7 +287,7 @@ export const UserService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.get('/v1/users/me');
+    const response = await api.get("/v1/users/me");
     return response.data;
-  }
+  },
 };
