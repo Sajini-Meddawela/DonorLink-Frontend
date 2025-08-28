@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserService } from '../services/api';
 import { X } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 interface ProfileEditTooltipProps {
   currentUser: any;
@@ -35,6 +36,7 @@ const ProfileEditTooltip: React.FC<ProfileEditTooltipProps> = ({ currentUser, on
         });
       } catch (error) {
         console.error('Failed to fetch profile:', error);
+        toast.error('Failed to load Profile Data')
         setProfileData({
           name: currentUser.name || '',
           email: currentUser.email || '',
@@ -72,10 +74,11 @@ const ProfileEditTooltip: React.FC<ProfileEditTooltipProps> = ({ currentUser, on
       };
 
       await UserService.updateUser(currentUser.id, updateData);
+      toast.success('Profile Information Updated successfully!');
       onClose();
     } catch (error) {
       console.error('Failed to update profile:', error);
-      alert('Failed to update profile. Please try again.');
+      toast.error('Failed to update profile. Please try again.');
     }
   };
 

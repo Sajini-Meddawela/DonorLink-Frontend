@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 interface InventoryItem {
   id: number;
@@ -9,11 +10,41 @@ interface InventoryItem {
 }
 
 const inventoryData: InventoryItem[] = [
-  { id: 1, name: "Milk Powder", stockLevel: 30, category: "Food", reorderLevel: 10 },
-  { id: 2, name: "Sanitary Pads", stockLevel: 50, category: "Hygiene", reorderLevel: 20 },
-  { id: 3, name: "Notebooks", stockLevel: 70, category: "Education", reorderLevel: 30 },
-  { id: 4, name: "Bandages", stockLevel: 50, category: "Medical", reorderLevel: 15 },
-  { id: 5, name: "Soap", stockLevel: 120, category: "Hygiene", reorderLevel: 60 },
+  {
+    id: 1,
+    name: "Milk Powder",
+    stockLevel: 30,
+    category: "Food",
+    reorderLevel: 10,
+  },
+  {
+    id: 2,
+    name: "Sanitary Pads",
+    stockLevel: 50,
+    category: "Hygiene",
+    reorderLevel: 20,
+  },
+  {
+    id: 3,
+    name: "Notebooks",
+    stockLevel: 70,
+    category: "Education",
+    reorderLevel: 30,
+  },
+  {
+    id: 4,
+    name: "Bandages",
+    stockLevel: 50,
+    category: "Medical",
+    reorderLevel: 15,
+  },
+  {
+    id: 5,
+    name: "Soap",
+    stockLevel: 120,
+    category: "Hygiene",
+    reorderLevel: 60,
+  },
 ];
 
 const DeleteInventory: React.FC = () => {
@@ -21,20 +52,17 @@ const DeleteInventory: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Function to handle delete icon click
   const handleDeleteClick = (item: InventoryItem) => {
     setSelectedItem(item);
     setShowModal(true);
   };
 
-  // Function to confirm delete
   const confirmDelete = () => {
-    if (!selectedItem) return; // Prevent null errors
+    if (!selectedItem) return;
 
-    // Remove the item from the inventory
     setItems(items.filter((item) => item.id !== selectedItem.id));
+    toast.success(`Item "${selectedItem.name}" deleted successfully!`);
 
-    // Close modal and reset selection
     setShowModal(false);
     setSelectedItem(null);
   };
@@ -56,9 +84,15 @@ const DeleteInventory: React.FC = () => {
           {items.map((item) => (
             <tr key={item.id}>
               <td className="border border-gray-300 px-4 py-2">{item.name}</td>
-              <td className="border border-gray-300 px-4 py-2">{item.stockLevel}</td>
-              <td className="border border-gray-300 px-4 py-2">{item.category}</td>
-              <td className="border border-gray-300 px-4 py-2">{item.reorderLevel}</td>
+              <td className="border border-gray-300 px-4 py-2">
+                {item.stockLevel}
+              </td>
+              <td className="border border-gray-300 px-4 py-2">
+                {item.category}
+              </td>
+              <td className="border border-gray-300 px-4 py-2">
+                {item.reorderLevel}
+              </td>
               <td className="border border-gray-300 px-4 py-2">
                 <button
                   onClick={() => handleDeleteClick(item)}
@@ -77,7 +111,8 @@ const DeleteInventory: React.FC = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg">
             <p className="text-lg font-semibold mb-4">
-              Do you want to delete the inventory item: <strong>{selectedItem.name}</strong>?
+              Do you want to delete the inventory item:{" "}
+              <strong>{selectedItem.name}</strong>?
             </p>
             <div className="flex justify-end">
               <button

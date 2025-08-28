@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { MealDonationSlot, CareHome } from '../Types/types';
-import Navbar from '../components/NavBarAuth';
-import DonorSidebar from '../components/DonorSidebar';
+import React, { useState } from "react";
+import { toast } from "react-toastify";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { MealDonationSlot, CareHome } from "../Types/types";
+import Navbar from "../components/NavBarAuth";
+import DonorSidebar from "../components/DonorSidebar";
 
 interface PaymentData {
   cardNumber: string;
@@ -16,49 +17,49 @@ const PaymentGateway: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const { slot, careHome, paymentMethod } = location.state as { 
-    slot: MealDonationSlot; 
+  const { slot, careHome, paymentMethod } = location.state as {
+    slot: MealDonationSlot;
     careHome: CareHome;
     paymentMethod: string;
   };
 
   const [paymentData, setPaymentData] = useState<PaymentData>({
-    cardNumber: '',
-    cardHolder: '',
-    expiryDate: '',
-    cvv: ''
+    cardNumber: "",
+    cardHolder: "",
+    expiryDate: "",
+    cvv: "",
   });
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'cardNumber') {
+
+    if (name === "cardNumber") {
       const formattedValue = value
-        .replace(/\s/g, '')
-        .replace(/(\d{4})/g, '$1 ')
+        .replace(/\s/g, "")
+        .replace(/(\d{4})/g, "$1 ")
         .trim()
         .slice(0, 19);
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }));
+      setPaymentData((prev) => ({ ...prev, [name]: formattedValue }));
       return;
     }
 
-    if (name === 'expiryDate') {
+    if (name === "expiryDate") {
       const formattedValue = value
-        .replace(/\D/g, '')
-        .replace(/(\d{2})(\d)/, '$1/$2')
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "$1/$2")
         .slice(0, 5);
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }));
+      setPaymentData((prev) => ({ ...prev, [name]: formattedValue }));
       return;
     }
 
-    if (name === 'cvv') {
-      const formattedValue = value.replace(/\D/g, '').slice(0, 4);
-      setPaymentData(prev => ({ ...prev, [name]: formattedValue }));
+    if (name === "cvv") {
+      const formattedValue = value.replace(/\D/g, "").slice(0, 4);
+      setPaymentData((prev) => ({ ...prev, [name]: formattedValue }));
       return;
     }
 
-    setPaymentData(prev => ({ ...prev, [name]: value }));
+    setPaymentData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,25 +67,26 @@ const PaymentGateway: React.FC = () => {
     setLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000)); 
-      
-      navigate('/donation-receipt', {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      navigate("/donation-receipt", {
         state: {
           donation: {
-            type: 'meal',
+            type: "meal",
             slot,
             careHome,
-            paymentMethod: 'online',
-            paymentStatus: 'completed',
+            paymentMethod: "online",
+            paymentStatus: "completed",
             date: new Date(),
             donor: user,
-            paymentData 
-          }
-        }
+            paymentData,
+          },
+        },
       });
+      toast.success("Payment processed successfully!");
     } catch (error) {
-      console.error('Payment failed:', error);
-      alert('Payment failed. Please try again.');
+      console.error("Payment failed:", error);
+      toast.error("Payment failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -92,7 +94,7 @@ const PaymentGateway: React.FC = () => {
 
   const isFormValid = () => {
     return (
-      paymentData.cardNumber.replace(/\s/g, '').length === 16 &&
+      paymentData.cardNumber.replace(/\s/g, "").length === 16 &&
       paymentData.cardHolder.trim().length > 0 &&
       paymentData.expiryDate.length === 5 &&
       paymentData.cvv.length >= 3
@@ -106,8 +108,10 @@ const PaymentGateway: React.FC = () => {
         <DonorSidebar activePage="meal-donation" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold text-[#63C6F7] mb-6">Payment Gateway</h1>
-            
+            <h1 className="text-3xl font-bold text-[#63C6F7] mb-6">
+              Payment Gateway
+            </h1>
+
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Donation Summary</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -117,7 +121,9 @@ const PaymentGateway: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-600">Date</p>
-                  <p className="font-semibold">{new Date(slot.date).toLocaleDateString()}</p>
+                  <p className="font-semibold">
+                    {new Date(slot.date).toLocaleDateString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Meal Type</p>
@@ -130,9 +136,12 @@ const PaymentGateway: React.FC = () => {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white rounded-lg shadow-md p-6"
+            >
               <h2 className="text-xl font-semibold mb-4">Card Details</h2>
-              
+
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -197,17 +206,19 @@ const PaymentGateway: React.FC = () => {
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="font-semibold text-[#63C6F7] mb-2">Security Notice</h3>
+                <h3 className="font-semibold text-[#63C6F7] mb-2">
+                  Security Notice
+                </h3>
                 <p className="text-sm text-gray-600">
-                  Your payment information is encrypted and secure. We use industry-standard 
-                  SSL encryption to protect your data.
+                  Your payment information is encrypted and secure. We use
+                  industry-standard SSL encryption to protect your data.
                 </p>
               </div>
 
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={() => navigate('/meal-donation-payment')}
+                  onClick={() => navigate("/meal-donation-payment")}
                   className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50"
                 >
                   Back
@@ -223,7 +234,7 @@ const PaymentGateway: React.FC = () => {
                       Processing...
                     </>
                   ) : (
-                    'Pay Now - LKR 2,500.00'
+                    "Pay Now - LKR 2,500.00"
                   )}
                 </button>
               </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import { DonationsService, CareHomeService } from "../services/api";
 import { Donation, User, CareHome } from "../Types/types";
@@ -50,19 +51,28 @@ const DonationReceiptPage: React.FC = () => {
 
   const handleDownloadPDF = () => {
     const receiptElement = document.getElementById("receipt");
-    if (!receiptElement) return;
+    if (!receiptElement) {
+      toast.error("Receipt element not found");
+      return;
+    }
 
-    html2canvas(receiptElement).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    html2canvas(receiptElement)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`donation-receipt-${donationId}.pdf`);
-      navigate("/donor_dashboard");
-    });
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`donation-receipt-${donationId}.pdf`);
+        toast.success("Receipt downloaded successfully!");
+        navigate("/donor_dashboard");
+      })
+      .catch((error) => {
+        console.error("Error generating PDF:", error);
+        toast.error("Failed to download receipt");
+      });
   };
 
   const handleCancel = () => {
@@ -155,14 +165,17 @@ const DonationReceiptPage: React.FC = () => {
                   </p>
                   <p>
                     <span className="font-medium">Status:</span>{" "}
-                    <span className={`${
-                      donation.status === "completed"
-                        ? "text-green-600"
-                        : donation.status === "rejected"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    } font-medium`}>
-                      {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
+                    <span
+                      className={`${
+                        donation.status === "completed"
+                          ? "text-green-600"
+                          : donation.status === "rejected"
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                      } font-medium`}
+                    >
+                      {donation.status.charAt(0).toUpperCase() +
+                        donation.status.slice(1)}
                     </span>
                   </p>
                 </div>
@@ -173,24 +186,25 @@ const DonationReceiptPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Thank You Note</h3>
               {donation.status === "pending" && (
                 <p className="text-gray-700 mb-6">
-                  Your donation of {donation.quantity}{" "}
-                  {donation.need?.itemName} is pending confirmation from {careHome?.name}.
-                  You'll receive an update once the care home has processed your donation.
+                  Your donation of {donation.quantity} {donation.need?.itemName}{" "}
+                  is pending confirmation from {careHome?.name}. You'll receive
+                  an update once the care home has processed your donation.
                 </p>
               )}
               {donation.status === "completed" && (
                 <p className="text-gray-700 mb-6">
                   Your generous donation of {donation.quantity}{" "}
-                  {donation.need?.itemName} has been received and will help us continue our
-                  mission to provide care and support. We truly appreciate your contribution
-                  to our community.
+                  {donation.need?.itemName} has been received and will help us
+                  continue our mission to provide care and support. We truly
+                  appreciate your contribution to our community.
                 </p>
               )}
               {donation.status === "rejected" && (
                 <p className="text-gray-700 mb-6">
-                  We regret to inform you that your donation of {donation.quantity}{" "}
-                  {donation.need?.itemName} could not be accepted at this time. Please
-                  contact {careHome?.name} for more information.
+                  We regret to inform you that your donation of{" "}
+                  {donation.quantity} {donation.need?.itemName} could not be
+                  accepted at this time. Please contact {careHome?.name} for
+                  more information.
                 </p>
               )}
               <div className="flex items-center justify-between">

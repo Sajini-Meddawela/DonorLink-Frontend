@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   NeedsService,
@@ -48,31 +49,30 @@ const DonationPage: React.FC = () => {
     fetchNeedAndCareHome();
   }, [needId]);
 
-const handleDonate = async () => {
-  if (!user || !need) return;
+  const handleDonate = async () => {
+    if (!user || !need) return;
 
-  setIsSubmitting(true);
-  try {
-    const donationData = {
-      donorId: user.id,
-      needId: need.id,
-      quantity: donationQuantity,
-      date: new Date().toISOString(),
-      status: "pending" as const, // Mark as const to ensure type is "pending" not string
-      notes: `Donation of ${donationQuantity} ${need.itemName}`,
-    };
+    setIsSubmitting(true);
+    try {
+      const donationData = {
+        donorId: user.id,
+        needId: need.id,
+        quantity: donationQuantity,
+        date: new Date().toISOString(),
+        status: "pending" as const,
+        notes: `Donation of ${donationQuantity} ${need.itemName}`,
+      };
 
-    const donation = await DonationsService.createDonation(donationData);
-    navigate(`/donation-receipt/${donation.id}`);
-  } catch (err) {
-    console.error("Donation error:", err);
-    setError(
-      err instanceof Error ? err.message : "Failed to process donation"
-    );
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const donation = await DonationsService.createDonation(donationData);
+      toast.success("Donation submitted successfully!");
+      navigate(`/donation-receipt/${donation.id}`);
+    } catch (err) {
+      console.error("Donation error:", err);
+      toast.error("Failed to process donation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error)
     return <div className="text-center p-8 text-red-500">Error: {error}</div>;
