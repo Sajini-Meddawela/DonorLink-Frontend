@@ -41,7 +41,7 @@ const DonationMadePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'drygoods' | 'meals'>('drygoods');
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 7;
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -271,7 +271,7 @@ const DonationMadePage: React.FC = () => {
                     accessor: (item) => (
                       <div className="flex space-x-4">
                         <button
-                          className="text-[#63C6F7] hover:text-[#52b0e0] flex items-center"
+                          className="text-[#63C6F7] font-semibold hover:text-[#52b0e0] flex items-center"
                           onClick={() => handleViewReceipt(item)}
                         >
                           <span className="mr-1">View Receipt</span>
@@ -346,7 +346,7 @@ const DonationMadePage: React.FC = () => {
                     accessor: (item) => (
                       <div className="flex space-x-4">
                         <button
-                          className="text-[#63C6F7] hover:text-[#52b0e0] flex items-center"
+                          className="text-[#63C6F7] font-semibold hover:text-[#52b0e0] flex items-center"
                           onClick={() => handleViewReceipt(item)}
                         >
                           <span className="mr-1">View Receipt</span>
