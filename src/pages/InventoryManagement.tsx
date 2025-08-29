@@ -6,7 +6,7 @@ import Table from "../components/Table";
 import Pagination from "../components/Pagination";
 import Button from "../components/AddItemButton";
 import Navbar from "../components/NavBarAuth";
-import { InventoryItem, InventoryTableItem } from "../Types/types";
+import { InventoryTableItem } from "../Types/types";
 import { InventoryService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -23,7 +23,7 @@ const InventoryManagementPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 9;
   const totalPages = Math.ceil(inventoryData.length / itemsPerPage);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const InventoryManagementPage: React.FC = () => {
           category: item.category,
           stockLevel: item.stockLevel,
           reorderLevel: item.reorderLevel,
+          unit: item.unit || "units",
         }));
         setInventoryData(tableData);
       } catch (err) {
@@ -134,9 +135,23 @@ const InventoryManagementPage: React.FC = () => {
             <Table<InventoryTableItem>
               columns={[
                 { header: "Item Name", accessor: "name" },
-                { header: "Stock Level", accessor: "stockLevel" },
+                {
+                  header: "Current Level",
+                  accessor: (item: InventoryTableItem) => (
+                    <span>
+                      {item.stockLevel} {item.unit}
+                    </span>
+                  ),
+                },
                 { header: "Category", accessor: "category" },
-                { header: "Reorder Level", accessor: "reorderLevel" },
+                {
+                  header: "Reorder Level",
+                  accessor: (item: InventoryTableItem) => (
+                    <span>
+                      {item.reorderLevel} {item.unit}
+                    </span>
+                  ),
+                },
                 {
                   header: "Actions",
                   accessor: (item: InventoryTableItem) => (
