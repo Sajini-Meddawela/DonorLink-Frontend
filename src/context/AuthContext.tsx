@@ -17,6 +17,7 @@ interface User {
   address?: string;
   role: "DONOR" | "CAREHOME";
   isVerified: boolean;
+  unreadNotifications?: number; // Add this property
 }
 
 interface AuthContextType {
@@ -24,6 +25,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void; // Add this function
   loading: boolean;
   isAuthenticated: boolean;
 }
@@ -117,10 +119,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const logout = () => {
-    // Disconnect socket first
     disconnectSocket();
 
-    // Clear local storage
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
@@ -135,11 +135,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     navigate("/login");
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   const value = {
     user,
     token,
     login,
     logout,
+    updateUser, 
     loading,
     isAuthenticated: !!token,
   };

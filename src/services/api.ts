@@ -330,3 +330,28 @@ export const ChatService = {
     return response.data;
   },
 };
+
+export const NotificationService = {
+  getNotifications: async (userId: number): Promise<any[]> => {
+    const response = await api.get("/notifications", { params: { userId } });
+    return response.data;
+  },
+
+  getUnreadCount: async (userId: number): Promise<number> => {
+    const response = await api.get("/notifications/unread-count", { params: { userId } });
+    return response.data.count;
+  },
+
+  markAsRead: async (notificationId: number): Promise<void> => {
+    await api.patch(`/notifications/${notificationId}/read`);
+  },
+
+  markAllAsRead: async (userId: number): Promise<void> => {
+    await api.patch("/notifications/mark-all-read", { userId });
+  },
+
+  createNotification: async (notificationData: any): Promise<any> => {
+    const response = await api.post("/notifications", notificationData);
+    return response.data;
+  },
+};
