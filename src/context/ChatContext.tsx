@@ -19,6 +19,11 @@ interface ChatContextType {
   unreadChatCount: number;
   selectChat: (chat: Chat | null) => void;
   sendMessage: (content: string) => Promise<void>;
+  sendMessageWithFile: (
+    content: string, 
+    messageType: "TEXT" | "IMAGE" | "FILE", 
+    fileData?: { fileUrl: string; fileName: string; fileSize: number; mimeType: string }
+  ) => Promise<void>;
   fetchChats: () => Promise<void>;
   markAsRead: (chatId: number) => Promise<void>;
   fetchUnreadChatCount: () => Promise<void>;
@@ -82,13 +87,11 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     if (message.chatId === currentChat?.id) {
       setMessages((prev) => [...prev, message]);
       
-      // If the message is from another user, mark it as read
       if (message.senderId !== user?.id) {
         markAsRead(currentChat!.id);
       }
     }
 
-    // Update the chat list with the new message
     setChats((prev) =>
       prev.map((chat) => {
         if (chat.id === message.chatId) {
@@ -98,7 +101,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
             updatedAt: new Date().toISOString(),
           };
           
-          // If this is not the current chat, increment unread count
           if (chat.id !== currentChat?.id && message.senderId !== user?.id) {
             updatedChat.unreadCount = (chat.unreadCount || 0) + 1;
           }
@@ -109,7 +111,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       })
     );
 
-    // Update the unread chat count if the message is from another user
     if (message.senderId !== user?.id && message.chatId !== currentChat?.id) {
       setUnreadChatCount(prev => prev + 1);
     }
@@ -120,7 +121,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       setLoading(true);
       const userChats = await ChatService.getUserChats();
 
-      // Filter out any null values that might come from the API
       const validChats = userChats.filter((chat) => chat !== null);
 
       setChats(validChats);
@@ -162,12 +162,10 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     try {
       await ChatService.markMessagesAsRead(chatId);
       
-      // Update the chat's unread count to 0
       setChats(prev => prev.map(chat => 
         chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
       ));
       
-      // Update the total unread chat count
       fetchUnreadChatCount();
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
@@ -178,7 +176,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     setCurrentChat(chat);
     if (chat) {
       loadChatMessages(chat.id);
-      // Mark messages as read when selecting a chat
       markAsRead(chat.id);
     } else {
       setMessages([]);
@@ -210,6 +207,41 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   };
 
+  const sendMessageWithFile = async (
+    content: string, 
+    messageType: "TEXT" | "IMAGE" | "FILE" = "TEXT", 
+    fileData?: { fileUrl: string; fileName: string; fileSize: number; mimeType: string }
+  ) => {
+    if (!currentChat) return;
+
+    try {
+      const newMessage = await ChatService.sendMessageWithFile(
+        currentChat.id, 
+        content, 
+        messageType, 
+        fileData
+      );
+      
+      setMessages((prev) => [...prev, newMessage]);
+
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === currentChat.id) {
+            return {
+              ...chat,
+              messages: [newMessage],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return chat;
+        })
+      );
+    } catch (err) {
+      setError("Failed to send message");
+      console.error("Error sending message:", err);
+    }
+  };
+
   const value: ChatContextType = {
     chats,
     currentChat,
@@ -219,6 +251,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     unreadChatCount,
     selectChat,
     sendMessage,
+    sendMessageWithFile,
     fetchChats,
     markAsRead,
     fetchUnreadChatCount,

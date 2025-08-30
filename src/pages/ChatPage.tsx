@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
-import { MessageSquare, ArrowLeft, Send, Search } from "lucide-react";
+import {
+  MessageSquare,
+  ArrowLeft,
+  Send,
+  Search,
+  Paperclip,
+  X,
+  ImageIcon,
+  FileText,
+  Download,
+} from "lucide-react";
 import Navbar from "../components/NavBarAuth";
+import { ChatService } from "../services/api";
 
 const ChatPage: React.FC = () => {
   const { user } = useAuth();
@@ -13,10 +24,13 @@ const ChatPage: React.FC = () => {
     loading,
     selectChat,
     sendMessage,
+    sendMessageWithFile,
     fetchChats,
   } = useChat();
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchChats();
@@ -28,12 +42,74 @@ const ChatPage: React.FC = () => {
     }
   }, [chats, currentChat, selectChat]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        alert("File size must be less than 10MB");
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain",
+      ];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        alert(
+          "Only images (JPEG, PNG, GIF) and documents (PDF, DOC, DOCX, TXT) are allowed"
+        );
+        return;
+      }
+
+      setFile(selectedFile);
+      e.target.value = ""; 
+    }
+  };
+
+  const removeFile = () => {
+    setFile(null);
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() === "") return;
+    if (newMessage.trim() === "" && !file) return;
 
-    await sendMessage(newMessage);
+    let fileData;
+    let messageType: "TEXT" | "IMAGE" | "FILE" = "TEXT";
+    let content = newMessage;
+
+    if (file) {
+      setUploading(true);
+      try {
+        const uploadResponse = await ChatService.uploadFile(file);
+        fileData = uploadResponse;
+
+        if (file.type.startsWith("image/")) {
+          messageType = "IMAGE";
+          content = file.name;
+        } else {
+          messageType = "FILE";
+          content = file.name;
+        }
+      } catch (error) {
+        console.error("Failed to upload file:", error);
+        alert("Failed to upload file. Please try again.");
+        setUploading(false);
+        return;
+      }
+    }
+
+    await sendMessageWithFile(content, messageType, fileData);
     setNewMessage("");
+    setFile(null);
+    setUploading(false);
   };
 
   const getChatName = (chat: any) => {
@@ -47,6 +123,13 @@ const ChatPage: React.FC = () => {
   const getLastMessagePreview = (chat: any) => {
     if (chat.messages && chat.messages.length > 0) {
       const lastMessage = chat.messages[0];
+
+      if (lastMessage.messageType === "IMAGE") {
+        return "📷 Image";
+      } else if (lastMessage.messageType === "FILE") {
+        return "📄 File";
+      }
+
       return lastMessage.content.length > 30
         ? `${lastMessage.content.substring(0, 30)}...`
         : lastMessage.content;
@@ -115,7 +198,7 @@ const ChatPage: React.FC = () => {
                       <div className="ml-2 text-xs text-gray-400">
                         {new Date(chat.updatedAt).toLocaleDateString()}
                       </div>
-                      {(chat.unreadCount || 0) > 0 && ( 
+                      {(chat.unreadCount || 0) > 0 && (
                         <span className="ml-2 bg-[#85C536] text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
                           {chat.unreadCount}
                         </span>
@@ -180,7 +263,52 @@ const ChatPage: React.FC = () => {
                             : "bg-gray-200 text-gray-800"
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        {message.messageType === "TEXT" && (
+                          <p className="text-sm">{message.content}</p>
+                        )}
+
+                        {message.messageType === "IMAGE" && message.fileUrl && (
+                          <div>
+                            <img
+                              src={`http://localhost:4000${message.fileUrl}`}
+                              alt={message.content}
+                              className="max-w-full h-auto rounded max-h-48 object-contain"
+                            />
+                            {message.content && message.content !== "File" && (
+                              <p className="text-sm mt-1">{message.content}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {message.messageType === "FILE" && message.fileUrl && (
+                          <div className="flex flex-col">
+                            <a
+                              href={`http://localhost:4000${message.fileUrl}`}
+                              download={message.fileName || message.content}
+                              className="text-sm flex items-center hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                if (message.mimeType === "application/pdf") {
+                                  e.preventDefault();
+                                  window.open(
+                                    `http://localhost:4000${message.fileUrl}`,
+                                    "_blank"
+                                  );
+                                }
+                              }}
+                            >
+                              <FileText size={16} className="mr-1" />
+                              {message.fileName || message.content}
+                              <Download size={14} className="ml-1" />
+                            </a>
+                            {message.fileSize && (
+                              <span className="text-xs opacity-75 mt-1">
+                                {(message.fileSize / 1024).toFixed(1)} KB
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(message.createdAt).toLocaleTimeString()}
@@ -194,20 +322,61 @@ const ChatPage: React.FC = () => {
                 onSubmit={handleSendMessage}
                 className="p-4 border-t border-gray-200 bg-white"
               >
+                {file && (
+                  <div className="mb-2 flex items-center justify-between p-2 bg-gray-100 rounded">
+                    <div className="flex items-center">
+                      {file.type.startsWith("image/") ? (
+                        <ImageIcon size={16} className="mr-2 text-blue-500" />
+                      ) : (
+                        <FileText size={16} className="mr-2 text-blue-500" />
+                      )}
+                      <span className="text-sm text-gray-700 truncate max-w-xs">
+                        {file.name}
+                      </span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        ({(file.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex">
+                  <label className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-l-lg px-3 py-2 cursor-pointer">
+                    <Paperclip size={20} className="text-gray-600" />
+                    <input
+                      type="file"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
+                  </label>
+
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
+                    className="flex-1 border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#63C6F7]"
+                    disabled={uploading}
                   />
+
                   <button
                     type="submit"
-                    disabled={newMessage.trim() === ""}
-                    className="bg-[#63C6F7] text-white px-4 py-2 rounded-r-lg hover:bg-[#4fb0e0] disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={(newMessage.trim() === "" && !file) || uploading}
+                    className="bg-[#63C6F7] text-white px-4 py-2 rounded-r-lg hover:bg-[#4fb0e0] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <Send size={20} />
+                    {uploading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Send size={20} />
+                    )}
                   </button>
                 </div>
               </form>
