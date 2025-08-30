@@ -112,6 +112,7 @@ export interface Chat {
     email: string;
   };
   messages?: Message[];
+  unreadCount?: number; 
 }
 
 export interface Message {

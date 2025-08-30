@@ -20,7 +20,7 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     fetchChats();
-  }, []);
+  }, [fetchChats]);
 
   useEffect(() => {
     if (chats.length > 0 && !currentChat) {
@@ -102,7 +102,7 @@ const ChatPage: React.FC = () => {
                   }`}
                   onClick={() => selectChat(chat)}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900 truncate">
                         {getChatName(chat)}
@@ -111,8 +111,15 @@ const ChatPage: React.FC = () => {
                         {getLastMessagePreview(chat)}
                       </p>
                     </div>
-                    <div className="ml-2 text-xs text-gray-400">
-                      {new Date(chat.updatedAt).toLocaleDateString()}
+                    <div className="flex items-center">
+                      <div className="ml-2 text-xs text-gray-400">
+                        {new Date(chat.updatedAt).toLocaleDateString()}
+                      </div>
+                      {(chat.unreadCount || 0) > 0 && ( 
+                        <span className="ml-2 bg-[#85C536] text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                          {chat.unreadCount}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -169,7 +176,7 @@ const ChatPage: React.FC = () => {
                       <div
                         className={`inline-block p-3 rounded-lg max-w-xs md:max-w-md ${
                           message.senderId === user?.id
-                            ? "bg-[#85C536] text-white"
+                            ? "bg-[#63C6F7] text-white"
                             : "bg-gray-200 text-gray-800"
                         }`}
                       >

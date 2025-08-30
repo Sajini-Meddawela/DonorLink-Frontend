@@ -329,6 +329,22 @@ export const ChatService = {
     const response = await api.post("/chats/message", { chatId, content });
     return response.data;
   },
+
+  getUnreadCount: async (): Promise<number> => {
+    const response = await api.get("/chats/unread-count");
+    return response.data;
+  },
+  markMessagesAsRead: async (chatId: number): Promise<void> => {
+    await api.post("/chats/mark-read", { chatId });
+  },
+  getUnreadChatCount: async (): Promise<number> => {
+    const response = await api.get("/chats/unread-chat-count");
+    return response.data;
+  },
+  getChatUnreadCounts: async (): Promise<{chatId: number, unreadCount: number}[]> => {
+    const response = await api.get("/chats/chat-unread-counts");
+    return response.data;
+  },
 };
 
 export const NotificationService = {
