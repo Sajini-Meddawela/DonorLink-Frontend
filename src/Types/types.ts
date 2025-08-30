@@ -9,6 +9,7 @@ export interface User {
   registrationNo?: string;
   category?: string;
   profileImage?: string;
+  unreadNotifications?: number;
 }
 
 export interface InventoryItem {
@@ -125,4 +126,21 @@ export interface Message {
     name: string;
     role: string;
   };
+}
+
+export interface Notification {
+  id: number;
+  userId: number;
+  type:
+    | "LOW_STOCK"
+    | "NEW_DONATION"
+    | "DONATION_STATUS"
+    | "MEAL_BOOKING"
+    | "SYSTEM";
+  title: string;
+  message: string;
+  isRead: boolean;
+  relatedId?: number;
+  createdAt: Date;
+  actionUrl?: string;
 }

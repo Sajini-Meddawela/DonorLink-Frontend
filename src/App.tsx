@@ -44,6 +44,7 @@ import DonationReceiptPage from "./pages/DonationReceiptPage";
 import CareHomeDonationsPage from "./pages/DonationReceived";
 import DonationMadePage from "./pages/DonationMade";
 import ChatPage from "./pages/ChatPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 const App: React.FC = () => {
   return (
@@ -134,6 +135,7 @@ const App: React.FC = () => {
                 />
                 <Route path="/donations/made" element={<DonationMadePage />} />
                 <Route path="/chat" element={<ChatPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
               </Route>
             </Routes>
             <ToastContainer
