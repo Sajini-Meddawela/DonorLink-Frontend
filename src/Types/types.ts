@@ -112,6 +112,7 @@ export interface Chat {
     email: string;
   };
   messages?: Message[];
+  unreadCount?: number; 
 }
 
 export interface Message {
@@ -121,13 +122,17 @@ export interface Message {
   chatId: number;
   createdAt: string;
   read: boolean;
+  messageType: "TEXT" | "IMAGE" | "FILE";
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
   sender?: {
     id: number;
     name: string;
     role: string;
   };
 }
-
 export interface Notification {
   id: number;
   userId: number;

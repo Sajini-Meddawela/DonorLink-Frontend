@@ -16,9 +16,17 @@ interface ChatContextType {
   messages: Message[];
   loading: boolean;
   error: string | null;
+  unreadChatCount: number;
   selectChat: (chat: Chat | null) => void;
   sendMessage: (content: string) => Promise<void>;
+  sendMessageWithFile: (
+    content: string, 
+    messageType: "TEXT" | "IMAGE" | "FILE", 
+    fileData?: { fileUrl: string; fileName: string; fileSize: number; mimeType: string }
+  ) => Promise<void>;
   fetchChats: () => Promise<void>;
+  markAsRead: (chatId: number) => Promise<void>;
+  fetchUnreadChatCount: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -41,11 +49,13 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
       fetchChats();
+      fetchUnreadChatCount();
     }
   }, [user]);
 
@@ -64,23 +74,46 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   }, [currentChat]);
 
+  const fetchUnreadChatCount = async () => {
+    try {
+      const count = await ChatService.getUnreadChatCount();
+      setUnreadChatCount(count);
+    } catch (error) {
+      console.error("Failed to fetch unread chat count:", error);
+    }
+  };
+
   const handleNewMessage = (message: Message) => {
     if (message.chatId === currentChat?.id) {
       setMessages((prev) => [...prev, message]);
+      
+      if (message.senderId !== user?.id) {
+        markAsRead(currentChat!.id);
+      }
     }
 
     setChats((prev) =>
       prev.map((chat) => {
         if (chat.id === message.chatId) {
-          return {
+          const updatedChat = {
             ...chat,
             messages: [message],
             updatedAt: new Date().toISOString(),
           };
+          
+          if (chat.id !== currentChat?.id && message.senderId !== user?.id) {
+            updatedChat.unreadCount = (chat.unreadCount || 0) + 1;
+          }
+          
+          return updatedChat;
         }
         return chat;
       })
     );
+
+    if (message.senderId !== user?.id && message.chatId !== currentChat?.id) {
+      setUnreadChatCount(prev => prev + 1);
+    }
   };
 
   const fetchChats = async () => {
@@ -88,7 +121,6 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
       setLoading(true);
       const userChats = await ChatService.getUserChats();
 
-      // Filter out any null values that might come from the API
       const validChats = userChats.filter((chat) => chat !== null);
 
       setChats(validChats);
@@ -126,10 +158,25 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   };
 
+  const markAsRead = async (chatId: number) => {
+    try {
+      await ChatService.markMessagesAsRead(chatId);
+      
+      setChats(prev => prev.map(chat => 
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+      ));
+      
+      fetchUnreadChatCount();
+    } catch (error) {
+      console.error("Failed to mark messages as read:", error);
+    }
+  };
+
   const selectChat = (chat: Chat | null) => {
     setCurrentChat(chat);
     if (chat) {
       loadChatMessages(chat.id);
+      markAsRead(chat.id);
     } else {
       setMessages([]);
     }
@@ -160,15 +207,54 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     }
   };
 
+  const sendMessageWithFile = async (
+    content: string, 
+    messageType: "TEXT" | "IMAGE" | "FILE" = "TEXT", 
+    fileData?: { fileUrl: string; fileName: string; fileSize: number; mimeType: string }
+  ) => {
+    if (!currentChat) return;
+
+    try {
+      const newMessage = await ChatService.sendMessageWithFile(
+        currentChat.id, 
+        content, 
+        messageType, 
+        fileData
+      );
+      
+      setMessages((prev) => [...prev, newMessage]);
+
+      setChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === currentChat.id) {
+            return {
+              ...chat,
+              messages: [newMessage],
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return chat;
+        })
+      );
+    } catch (err) {
+      setError("Failed to send message");
+      console.error("Error sending message:", err);
+    }
+  };
+
   const value: ChatContextType = {
     chats,
     currentChat,
     messages,
     loading,
     error,
+    unreadChatCount,
     selectChat,
     sendMessage,
+    sendMessageWithFile,
     fetchChats,
+    markAsRead,
+    fetchUnreadChatCount,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

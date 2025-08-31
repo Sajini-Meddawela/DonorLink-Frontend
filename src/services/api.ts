@@ -329,6 +329,62 @@ export const ChatService = {
     const response = await api.post("/chats/message", { chatId, content });
     return response.data;
   },
+
+  getUnreadCount: async (): Promise<number> => {
+    const response = await api.get("/chats/unread-count");
+    return response.data;
+  },
+  markMessagesAsRead: async (chatId: number): Promise<void> => {
+    await api.post("/chats/mark-read", { chatId });
+  },
+  getUnreadChatCount: async (): Promise<number> => {
+    const response = await api.get("/chats/unread-chat-count");
+    return response.data;
+  },
+  getChatUnreadCounts: async (): Promise<
+    { chatId: number; unreadCount: number }[]
+  > => {
+    const response = await api.get("/chats/chat-unread-counts");
+    return response.data;
+  },
+  uploadFile: async (
+    file: File
+  ): Promise<{
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+  }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/chats/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  sendMessageWithFile: async (
+    chatId: number,
+    content: string,
+    messageType: "TEXT" | "IMAGE" | "FILE",
+    fileData?: {
+      fileUrl: string;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+    }
+  ): Promise<Message> => {
+    const response = await api.post("/chats/message", {
+      chatId,
+      content,
+      messageType,
+      ...fileData,
+    });
+    return response.data;
+  },
 };
 
 export const NotificationService = {
@@ -338,7 +394,9 @@ export const NotificationService = {
   },
 
   getUnreadCount: async (userId: number): Promise<number> => {
-    const response = await api.get("/notifications/unread-count", { params: { userId } });
+    const response = await api.get("/notifications/unread-count", {
+      params: { userId },
+    });
     return response.data.count;
   },
 
