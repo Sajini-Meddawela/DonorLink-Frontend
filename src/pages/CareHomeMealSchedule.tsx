@@ -189,162 +189,174 @@ const CareHomeMealSchedule: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">
-                {currentMonth.toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </h2>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    setCurrentMonth(
-                      new Date(
-                        currentMonth.getFullYear(),
-                        currentMonth.getMonth() - 1
-                      )
-                    )
-                  }
-                  className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setCurrentMonth(new Date())}
-                  className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                >
-                  Today
-                </button>
-                <button
-                  onClick={() =>
-                    setCurrentMonth(
-                      new Date(
-                        currentMonth.getFullYear(),
-                        currentMonth.getMonth() + 1
-                      )
-                    )
-                  }
-                  className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-
-            <MealCalendar
-              month={currentMonth}
-              days={days}
-              isCareHome={true}
-              onDayClick={handleDayClick}
-            />
-          </div>
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold mb-2">Legend:</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
-                <span>Available</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
-                <span>Reserved</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
-                <span>Booked</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
-                <span>Completed</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
-                <span>Cancelled</span>
-              </div>
-            </div>
-          </div>
-
-          {selectedDate && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                Create Slots for {selectedDate.toLocaleDateString()}
-              </h3>
-
-              {/* Existing slots section */}
-              {existingSlots.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="font-medium text-gray-700 mb-2">
-                    Existing Slots:
-                  </h4>
-                  <div className="space-y-2">
-                    {existingSlots.map((slot) => (
-                      <div
-                        key={slot.id}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                      >
-                        <span className="capitalize">
-                          {slot.mealType}: {slot.status}
-                        </span>
-                        {slot.status === "Available" && (
-                          <button
-                            onClick={() => handleDeleteSlot(slot.id!)}
-                            className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    ))}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Calendar Section */}
+            <div className="lg:w-3/4">
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">
+                    {currentMonth.toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </h2>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() =>
+                        setCurrentMonth(
+                          new Date(
+                            currentMonth.getFullYear(),
+                            currentMonth.getMonth() - 1
+                          )
+                        )
+                      }
+                      className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentMonth(new Date())}
+                      className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                    >
+                      Today
+                    </button>
+                    <button
+                      onClick={() =>
+                        setCurrentMonth(
+                          new Date(
+                            currentMonth.getFullYear(),
+                            currentMonth.getMonth() + 1
+                          )
+                        )
+                      }
+                      className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                    >
+                      Next
+                    </button>
                   </div>
                 </div>
-              )}
 
-              <div className="flex space-x-4 mb-4">
-                {["Breakfast", "Lunch", "Dinner"].map((mealType) => {
-                  const alreadyExists = existingSlots.some(
-                    (slot) => slot.mealType === mealType
-                  );
-                  return (
-                    <label key={mealType} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedMeals.includes(mealType)}
-                        onChange={() => handleMealToggle(mealType)}
-                        disabled={alreadyExists}
-                        className="mr-2 h-5 w-5 text-[#63C6F7] disabled:opacity-50"
-                      />
-                      <span className={alreadyExists ? "text-gray-400" : ""}>
-                        {mealType}
-                        {alreadyExists && " (Already exists)"}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-              <div className="flex space-x-4">
-                <button
-                  onClick={handleCreateSlots}
-                  disabled={loading || selectedMeals.length === 0}
-                  className="px-6 py-2 bg-[#63C6F7] text-white rounded-lg hover:bg-[#52b0e0] disabled:opacity-50"
-                >
-                  {loading ? "Creating..." : "Create Slots"}
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedDate(null);
-                    setSelectedMeals([]);
-                    setExistingSlots([]);
-                  }}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
+                <MealCalendar
+                  month={currentMonth}
+                  days={days}
+                  isCareHome={true}
+                  onDayClick={handleDayClick}
+                />
               </div>
             </div>
-          )}
+
+            {/* Legend and Form Section */}
+            <div className="lg:w-1/4">
+              <div className="sticky top-4 space-y-6">
+                {/* Legend */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold mb-2">Legend:</h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
+                      <span>Reserved</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
+                      <span>Booked</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
+                      <span>Completed</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
+                      <span>Cancelled</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meal Creation Form */}
+                {selectedDate && (
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-semibold mb-4">
+                      Create Slots for {selectedDate.toLocaleDateString()}
+                    </h3>
+
+                    {/* Existing slots section */}
+                    {existingSlots.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Existing Slots:
+                        </h4>
+                        <div className="space-y-2">
+                          {existingSlots.map((slot) => (
+                            <div
+                              key={slot.id}
+                              className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                            >
+                              <span className="capitalize">
+                                {slot.mealType}: {slot.status}
+                              </span>
+                              {slot.status === "Available" && (
+                                <button
+                                  onClick={() => handleDeleteSlot(slot.id!)}
+                                  className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col space-y-3 mb-4">
+                      {["Breakfast", "Lunch", "Dinner"].map((mealType) => {
+                        const alreadyExists = existingSlots.some(
+                          (slot) => slot.mealType === mealType
+                        );
+                        return (
+                          <label key={mealType} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedMeals.includes(mealType)}
+                              onChange={() => handleMealToggle(mealType)}
+                              disabled={alreadyExists}
+                              className="mr-2 h-5 w-5 text-[#63C6F7] disabled:opacity-50"
+                            />
+                            <span className={alreadyExists ? "text-gray-400" : ""}>
+                              {mealType}
+                              {alreadyExists && " (Already exists)"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={handleCreateSlots}
+                        disabled={loading || selectedMeals.length === 0}
+                        className="px-6 py-2 bg-[#63C6F7] text-white rounded-lg hover:bg-[#52b0e0] disabled:opacity-50"
+                      >
+                        {loading ? "Creating..." : "Create Slots"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDate(null);
+                          setSelectedMeals([]);
+                          setExistingSlots([]);
+                        }}
+                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

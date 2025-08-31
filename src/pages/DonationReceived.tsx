@@ -91,13 +91,7 @@ const CareHomeDonationsPage: React.FC = () => {
           mealDonationsData.map((donation: any) => ({
             id: donation.id,
             slot: donation,
-            donor: donation.donor
-              ? {
-                  id: donation.donor.id,
-                  name: donation.donor.name,
-                  email: donation.donor.email,
-                }
-              : undefined,
+            donor: donation.donor || undefined,
             careHomeId: donation.careHomeId,
             date: donation.date,
             status: donation.status.toLowerCase(),
