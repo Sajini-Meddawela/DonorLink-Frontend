@@ -65,53 +65,55 @@ const MealDonationPayment: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!paymentMethod) {
-      toast.error("Please select a payment method");
-      return;
+  if (!paymentMethod) {
+    toast.error("Please select a payment method");
+    return;
+  }
+
+  try {
+    // Only confirm the slot for non-online payments
+    if (paymentMethod !== "online") {
+      await MealDonationService.confirmSlot(slot.id!);
     }
 
-    try {
-      await MealDonationService.confirmSlot(slot.id!);
-
-      if (paymentMethod === "online") {
-        navigate("/payment-gateway", {
-          state: {
+    if (paymentMethod === "online") {
+      navigate("/payment-gateway", {
+        state: {
+          slot,
+          careHome,
+          paymentMethod,
+        },
+      });
+    } else {
+      navigate("/meal-donation-receipt", {
+        state: {
+          donation: {
+            type: "meal",
             slot,
             careHome,
             paymentMethod,
+            paymentStatus: paymentMethod === "cash" ? "pending" : "scheduled",
+            status: "booked",
+            date: new Date(),
+            donor: user,
           },
-        });
-      } else {
-        navigate("/meal-donation-receipt", {
-          state: {
-            donation: {
-              type: "meal",
-              slot,
-              careHome,
-              paymentMethod,
-              paymentStatus: paymentMethod === "cash" ? "pending" : "scheduled",
-              status: "booked",
-              date: new Date(),
-              donor: user,
-            },
-          },
-        });
-      }
-    } catch (error) {
-      console.error("Error confirming slot:", error);
-      toast.error("Failed to confirm your donation. Please try again.");
+        },
+      });
     }
-  };
-
+  } catch (error) {
+    console.error("Error processing donation:", error);
+    toast.error("Failed to process your donation. Please try again.");
+  }
+};
   if (reservationExpired) {
     return (
       <div className="flex flex-col h-screen bg-gray-50">
         <Navbar />
         <div className="flex flex-1 overflow-hidden pt-20">
-          <DonorSidebar activePage="meal-donation" />
+          <DonorSidebar activePage="meal-scheduling" />
           <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
             <div className="max-w-2xl mx-auto">
               <h1 className="text-3xl font-bold text-[#63C6F7] mb-6">
@@ -123,7 +125,7 @@ const MealDonationPayment: React.FC = () => {
                   donation page and select another slot.
                 </p>
                 <button
-                  onClick={() => navigate("/meal-donation")}
+                  onClick={() => navigate("/meal-scheduling")}
                   className="px-6 py-2 bg-[#63C6F7] text-white rounded-lg hover:bg-[#52b0e0]"
                 >
                   Return to Meal Donation
@@ -140,7 +142,7 @@ const MealDonationPayment: React.FC = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       <Navbar />
       <div className="flex flex-1 overflow-hidden pt-20">
-        <DonorSidebar activePage="meal-donation" />
+        <DonorSidebar activePage="/meal-scheduling" />
         <div className="flex-1 flex flex-col overflow-auto p-6 ml-[260px]">
           <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold text-[#63C6F7] mb-6">

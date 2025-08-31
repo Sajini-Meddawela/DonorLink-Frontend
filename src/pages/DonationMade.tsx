@@ -52,6 +52,10 @@ const DonationMadePage: React.FC = () => {
 
         const dryGoodsData = await DonationsService.getDonationsByDonor(user.id);
         
+          const sortedDryGoods = dryGoodsData.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
         const uniqueCareHomeIds = Array.from(
           new Set(
             dryGoodsData
@@ -81,6 +85,11 @@ const DonationMadePage: React.FC = () => {
         setDonationsData(enhancedDonations);
 
         const mealData = await MealDonationService.getDonorBookings(user.id);
+
+        const sortedMealData = mealData.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      
         const mealDonationsWithCareHomes = await Promise.all(
           mealData.map(async (meal: any) => {
             const careHome = await CareHomeService.getCareHomeDetails(meal.careHomeId);
@@ -89,7 +98,7 @@ const DonationMadePage: React.FC = () => {
               slot: meal,
               careHome,
               date: new Date(meal.date), 
-              status: meal.status as 'booked' | 'completed' | 'cancelled',
+              status: meal.status.toLowerCase() as 'booked' | 'completed' | 'cancelled',
               type: 'meal' as const
             };
           })
@@ -144,7 +153,7 @@ const DonationMadePage: React.FC = () => {
             slot: donation.slot,
             careHome: donation.careHome,
             paymentMethod: 'unknown',
-            paymentStatus: 'completed',
+            paymentStatus: donation.status === 'completed' ? 'completed' : 'pending',
             date: donation.date,
             status: donation.status,
             donor: user
@@ -337,7 +346,7 @@ const DonationMadePage: React.FC = () => {
                             : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {item.status}
+                        {item.status === "cancelled" ? "rejected" : item.status}
                       </span>
                     ),
                   },
