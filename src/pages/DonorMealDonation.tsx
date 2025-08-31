@@ -173,103 +173,113 @@ const DonorMealDonation: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Select Care Home</h2>
-            <select
-              value={selectedCareHome?.id || ""}
-              onChange={(e) => {
-                const selectedId = parseInt(e.target.value);
-                const home = careHomeOptions.find(
-                  (home) => home.id === selectedId
-                );
-                setSelectedCareHome(home || null);
-              }}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
-            >
-              <option value="">Select a care home</option>
-              {careHomeOptions.map((home) => (
-                <option key={home.id} value={home.id}>
-                  {home.name} - {home.address}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {selectedCareHome && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">
-                  Available Slots for {selectedCareHome.name}
-                </h2>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() =>
-                      setCurrentMonth(
-                        new Date(
-                          currentMonth.getFullYear(),
-                          currentMonth.getMonth() - 1
-                        )
-                      )
-                    }
-                    className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentMonth(new Date())}
-                    className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={() =>
-                      setCurrentMonth(
-                        new Date(
-                          currentMonth.getFullYear(),
-                          currentMonth.getMonth() + 1
-                        )
-                      )
-                    }
-                    className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
-                  >
-                    Next
-                  </button>
-                </div>
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column - Care Home Selection and Calendar */}
+            <div className="lg:w-4/5">
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Select Care Home</h2>
+                <select
+                  value={selectedCareHome?.id || ""}
+                  onChange={(e) => {
+                    const selectedId = parseInt(e.target.value);
+                    const home = careHomeOptions.find(
+                      (home) => home.id === selectedId
+                    );
+                    setSelectedCareHome(home || null);
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
+                >
+                  <option value="">Select a care home</option>
+                  {careHomeOptions.map((home) => (
+                    <option key={home.id} value={home.id}>
+                      {home.name} - {home.address}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <MealCalendar
-                month={currentMonth}
-                days={days}
-                onSlotClick={handleSlotClick}
-              />
+              {selectedCareHome && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">
+                      Available Slots for {selectedCareHome.name}
+                    </h2>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() =>
+                          setCurrentMonth(
+                            new Date(
+                              currentMonth.getFullYear(),
+                              currentMonth.getMonth() - 1
+                            )
+                          )
+                        }
+                        className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setCurrentMonth(new Date())}
+                        className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                      >
+                        Today
+                      </button>
+                      <button
+                        onClick={() =>
+                          setCurrentMonth(
+                            new Date(
+                              currentMonth.getFullYear(),
+                              currentMonth.getMonth() + 1
+                            )
+                          )
+                        }
+                        className="px-4 py-2 border border-[#63C6F7] rounded-lg text-[#63C6F7] hover:bg-[#63C6F7] hover:text-white"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold mb-2">Legend:</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
-                    <span>Available</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
-                    <span>Reserved</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
-                    <span>Booked</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
-                    <span>Completed</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
-                    <span>Cancelled</span>
+                  <MealCalendar
+                    month={currentMonth}
+                    days={days}
+                    onSlotClick={handleSlotClick}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Legend */}
+            <div className="lg:w-1/7">
+              <div className="sticky top-4">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold mb-2">Legend:</h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-green-100 border border-[#85C536] mr-2"></div>
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-yellow-100 border border-yellow-400 mr-2"></div>
+                      <span>Reserved</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-gray-100 border border-gray-300 mr-2"></div>
+                      <span>Booked</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-blue-100 border border-[#63C6F7] mr-2"></div>
+                      <span>Completed</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-red-100 border border-red-300 mr-2"></div>
+                      <span>Cancelled</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

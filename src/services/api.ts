@@ -242,6 +242,11 @@ export const MealDonationService = {
     return response.data;
   },
 
+  async getCareHomeMealDonations(careHomeId: number): Promise<any> {
+    const response = await api.get(`${MEAL_DONATION_BASE_URL}/carehome/${careHomeId}`);
+    return response.data;
+  },
+
   async reserveSlot(slotId: number, donorId: number): Promise<any> {
     const response = await api.post(
       `${MEAL_DONATION_BASE_URL}/${slotId}/reserve`,

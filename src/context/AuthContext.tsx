@@ -17,7 +17,7 @@ interface User {
   address?: string;
   role: "DONOR" | "CAREHOME";
   isVerified: boolean;
-  unreadNotifications?: number; // Add this property
+  unreadNotifications?: number; 
 }
 
 interface AuthContextType {
