@@ -23,7 +23,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-const API_BASE_URL = "http://localhost:4000/api/inventory";
 const NEEDS_BASE_URL = "http://localhost:4000/api/needs";
 const MEAL_DONATION_BASE_URL = "http://localhost:4000/api/mealdonations";
 const CARE_HOME_BASE_URL = "http://localhost:4000/api/carehomes";
@@ -72,6 +71,17 @@ export const InventoryService = {
       params: { q: query, userId },
     });
     return response.data;
+  },
+
+  bulkImportItems: async (items: any[]): Promise<InventoryItem[]> => {
+    const response = await api.post("/inventory/bulk-import", { items });
+    return response.data;
+  },
+
+  bulkDeleteItems: async (userId: number): Promise<void> => {
+    await api.delete("/inventory/bulk-delete", {
+      params: { userId },
+    });
   },
 };
 
@@ -243,7 +253,9 @@ export const MealDonationService = {
   },
 
   async getCareHomeMealDonations(careHomeId: number): Promise<any> {
-    const response = await api.get(`${MEAL_DONATION_BASE_URL}/carehome/${careHomeId}`);
+    const response = await api.get(
+      `${MEAL_DONATION_BASE_URL}/carehome/${careHomeId}`
+    );
     return response.data;
   },
 
