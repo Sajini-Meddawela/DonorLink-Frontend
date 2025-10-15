@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Gift, Bell } from "lucide-react";
 import DonorSidebar from "../components/DonorSidebar";
 import Navbar from "../components/NavBarAuth";
@@ -21,6 +21,7 @@ interface DonorNeedItem {
 
 const DonorNeedsPage: React.FC = () => {
   const navigate = useNavigate();
+   const location = useLocation();
   const { careHomeId } = useParams<{ careHomeId: string }>();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,6 +74,11 @@ const DonorNeedsPage: React.FC = () => {
 
     return () => clearInterval(intervalId);
   }, [careHomeId]);
+
+    useEffect(() => {
+    if (location.state?.fromUrgentNeeds && location.state?.highlightNeedId) {
+    }
+  }, [location.state, needsData]);
 
   const filteredData = needsData.filter(
     (item) =>

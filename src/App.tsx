@@ -43,6 +43,7 @@ import ResetPassword from "./pages/ResetPassword";
 import DonationReceiptPage from "./pages/DonationReceiptPage";
 import CareHomeDonationsPage from "./pages/DonationReceived";
 import DonationMadePage from "./pages/DonationMade";
+import UrgentNeedsPage from "./pages/UrgentNeedsPage";
 import ChatPage from "./pages/ChatPage";
 import NotificationsPage from "./pages/NotificationsPage";
 
@@ -106,6 +107,7 @@ const App: React.FC = () => {
                   path="/carehome-needs/:careHomeId"
                   element={<DonorNeedsPage />}
                 />
+                <Route path="/urgent-needs" element={<UrgentNeedsPage />} />
                 <Route path="/scheduling" element={<CareHomeMealSchedule />} />
                 <Route
                   path="/meal-scheduling"
