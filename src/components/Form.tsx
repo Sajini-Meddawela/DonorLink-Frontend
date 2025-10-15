@@ -17,10 +17,12 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     itemName: "",
     category: "Food",
     stockLevel: 0,
-    reorderLevel: 0,
+    reorderLevel: 1,
     unit: "units",
     itemDescription: "",
   });
+
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   // Available units for selection
   const unitOptions = [
@@ -55,12 +57,39 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         itemName: initialData.itemName || "",
         category: initialData.category || "Food",
         stockLevel: initialData.stockLevel || 0,
-        reorderLevel: initialData.reorderLevel || 0,
+        reorderLevel: initialData.reorderLevel || 1, // Ensure at least 1
         unit: initialData.unit || "units",
         itemDescription: initialData.itemDescription || "",
       });
     }
   }, [initialData]);
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+
+    if (formData.reorderLevel === 0) {
+      newErrors.reorderLevel = "Reorder level cannot be 0. Please set a proper reorder level.";
+    }
+
+    if (formData.reorderLevel < 1) {
+      newErrors.reorderLevel = "Reorder level must be at least 1.";
+    }
+
+    if (formData.reorderLevel > 100000) {
+      newErrors.reorderLevel = "Reorder level seems too high. Please enter a reasonable value.";
+    }
+
+    if (formData.stockLevel < 0) {
+      newErrors.stockLevel = "Stock level cannot be negative.";
+    }
+
+    if (!formData.itemName.trim()) {
+      newErrors.itemName = "Item name is required.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -68,17 +97,30 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     >
   ) => {
     const { name, value } = e.target;
+    const newValue = name === "stockLevel" || name === "reorderLevel"
+      ? Math.max(0, parseInt(value) || 0) 
+      : value;
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === "stockLevel" || name === "reorderLevel"
-          ? parseInt(value) || 0
-          : value,
+      [name]: newValue,
     }));
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -99,10 +141,15 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             name="itemName"
             value={formData.itemName}
             onChange={handleChange}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent ${
+              errors.itemName ? 'border-red-500' : ''
+            }`}
             required
             placeholder="e.g., Rice, Soap, Notebooks"
           />
+          {errors.itemName && (
+            <p className="text-red-500 text-xs mt-1">{errors.itemName}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -131,10 +178,15 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             name="stockLevel"
             value={formData.stockLevel}
             onChange={handleChange}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent ${
+              errors.stockLevel ? 'border-red-500' : ''
+            }`}
             min="0"
             required
           />
+          {errors.stockLevel && (
+            <p className="text-red-500 text-xs mt-1">{errors.stockLevel}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -144,16 +196,27 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             name="reorderLevel"
             value={formData.reorderLevel}
             onChange={handleChange}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent"
-            min="0"
+            className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#63C6F7] focus:border-transparent ${
+              errors.reorderLevel ? 'border-red-500' : ''
+            }`}
+            min="1"
             required
           />
-          {formData.reorderLevel > 0 &&
+          {errors.reorderLevel ? (
+            <p className="text-red-500 text-xs mt-1">{errors.reorderLevel}</p>
+          ) : (
+            formData.reorderLevel > 0 &&
             formData.stockLevel <= formData.reorderLevel && (
-              <p className="text-xs text-red-500 mt-1">
-                Stock is at or below reorder level
+              <p className="text-xs text-orange-500 mt-1">
+                ⚠️ Stock is at or below reorder level - this will generate a need request
               </p>
-            )}
+            )
+          )}
+          {!errors.reorderLevel && formData.reorderLevel > 0 && formData.stockLevel > formData.reorderLevel && (
+            <p className="text-xs text-green-500 mt-1">
+              ✓ Stock level is healthy
+            </p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -196,7 +259,8 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
         </button>
         <button
           type="submit"
-          className="px-6 py-2 bg-[#63C6F7] text-white rounded hover:bg-[#52b0e0] transition-colors"
+          className="px-6 py-2 bg-[#63C6F7] text-white rounded hover:bg-[#52b0e0] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={Object.keys(errors).some(key => errors[key])}
         >
           {isEditMode ? "Update Item" : "Add Item"}
         </button>
