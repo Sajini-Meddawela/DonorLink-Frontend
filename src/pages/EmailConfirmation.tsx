@@ -27,18 +27,23 @@ const EmailConfirmation: React.FC = () => {
       return;
     }
     try {
-      const res = await axios.get(
-        `http://localhost:4000/api/v1/auth/verify/${values.email}`
+      const res = await axios.post(
+        `http://localhost:4000/api/v1/auth/resend-verification/${values.email}`
       );
-      console.log(res.data);
       setLoading(false);
+      Swal.fire({
+        icon: "success",
+        title: "Verification Email Sent!",
+        text: "Please check your email for the verification link.",
+      });
       navigate(`/confirmation-sent/${values.email}`);
     } catch (err: any) {
       setLoading(false);
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: err.response?.data?.message || "Something went wrong!",
+        text:
+          err.response?.data?.message || "Failed to send verification email!",
       });
     }
   };

@@ -16,15 +16,17 @@ const AddInventoryPage: React.FC = () => {
       if (!user) {
         throw new Error("User not authenticated");
       }
+      
       await InventoryService.createItem({
         ...formData,
         userId: user.id,
       });
-      toast.success("Inventory item added successfully!");
+      
+      toast.success("Inventory item added/updated successfully!");
       navigate("/inventory");
     } catch (error) {
-      console.error("Failed to create inventory item:", error);
-      toast.error("Failed to add inventory item. Please try again.");
+      console.error("Failed to create/update inventory item:", error);
+      toast.error("Failed to add/update inventory item. Please try again.");
     }
   };
 

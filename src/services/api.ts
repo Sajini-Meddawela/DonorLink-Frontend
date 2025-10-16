@@ -136,6 +136,13 @@ export const NeedsService = {
     const response = await api.get(`/needs/public/${id}`);
     return response.data;
   },
+
+    getUrgentNeeds: async (page: number = 1, limit: number = 20): Promise<any> => {
+    const response = await api.get("/needs/urgent/all", {
+      params: { page, limit }
+    });
+    return response.data;
+  },
 };
 
 export const DonationsService = {
